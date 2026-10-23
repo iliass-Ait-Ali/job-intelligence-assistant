@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-intel"
+version = "0.1.0"
+description = "Phase 1 (data collection) of the AI-Powered Job & Internship Intelligence Assistant"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+search = [
+    "sentence-transformers>=3.0",
+    "chromadb>=1.0",
+]
+
+[project.scripts]
+jobintel = "job_intel.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

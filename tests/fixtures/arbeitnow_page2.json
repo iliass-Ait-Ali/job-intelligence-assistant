@@ -1,0 +1,13 @@
+{
+  "_fixture": "SYNTHETIC test data shaped like the Arbeitnow API.",
+  "data": [
+    {"slug": "ai-engineer-eta-6", "company_name": "Eta", "title": "Senior AI Engineer (w/d/m)",
+     "description": "<p>LLM &lt;b&gt;apps&lt;/b&gt;</p>", "remote": false, "url": "https://fixtures.invalid/arbeitnow/jobs/ai-engineer-eta-6",
+     "tags": ["Engineering"], "job_types": ["Permanent employment"], "location": "Cologne", "created_at": 1792300000},
+    {"slug": "ml-engineer-epsilon-5", "company_name": "Epsilon", "title": "Machine Learning Engineer",
+     "description": "<p>Seen on page 1 too.</p>", "remote": true, "url": "https://fixtures.invalid/arbeitnow/jobs/ml-engineer-epsilon-5",
+     "tags": [], "job_types": [], "location": "Remote", "created_at": 1792400000}
+  ],
+  "links": {"first": "x?page=1", "last": null, "prev": "x?page=1", "next": null},
+  "meta": {"current_page": 2, "per_page": 300}
+}

@@ -1,0 +1,31 @@
+{
+  "_fixture": "SYNTHETIC test data shaped like the Arbeitnow API. Not real listings; URLs use the reserved .invalid TLD.",
+  "data": [
+    {"slug": "data-scientist-acme-1", "company_name": "Acme GmbH", "title": "Data Scientist (m/w/d)",
+     "description": "<h2>Your role</h2><p>Build models with <b>Python</b> &amp; SQL.&nbsp;&nbsp;Use   pandas.</p><ul><li>Forecasting</li><li>NLP</li></ul><script>alert(1)</script>",
+     "remote": false, "url": "https://fixtures.invalid/arbeitnow/jobs/data-scientist-acme-1", "tags": ["Data Science"],
+     "job_types": ["Unbefristeter arbeitsvertrag", "berufserfahren"], "location": "Berlin", "created_at": 1792782048},
+    {"slug": "data-analyst-praktikum-beta-2", "company_name": "Beta AG", "title": "Praktikum Data Analyst (m/w/d)",
+     "description": "<p>Excel, SQL, Tableau</p>", "remote": true, "url": "https://fixtures.invalid/arbeitnow/jobs/data-analyst-praktikum-beta-2",
+     "tags": [], "job_types": ["Full Time"], "location": "Hamburg", "created_at": "1792700000"},
+    {"slug": "winter-intern-gamma-3", "company_name": "Gamma Ltd", "title": "Winter Data Internship",
+     "description": null, "remote": false, "url": "https://fixtures.invalid/arbeitnow/jobs/winter-intern-gamma-3",
+     "tags": ["Internships"], "job_types": [], "location": "", "created_at": 1792600000},
+    {"slug": "legal-bd-delta-4", "company_name": "Delta", "title": "Legal Business Developer (Legal AI Scaleup)",
+     "description": "<p>Sell things.</p>", "remote": false, "url": "https://fixtures.invalid/arbeitnow/jobs/legal-bd-delta-4",
+     "tags": ["Sales"], "job_types": ["Full Time"], "location": "Munich", "created_at": 1792500000},
+    {"slug": "data-scientist-acme-1", "company_name": "Acme GmbH", "title": "Data Scientist (m/w/d)",
+     "description": "<p>Same slug as the first record.</p>", "remote": false, "url": "https://fixtures.invalid/arbeitnow/jobs/data-scientist-acme-1-repost",
+     "tags": [], "job_types": [], "location": "Berlin", "created_at": 1792782048},
+    {"slug": "ml-engineer-epsilon-5", "company_name": "Epsilon", "title": "Machine Learning Engineer",
+     "description": "<p>PyTorch</p>", "remote": true, "url": "https://FIXTURES.invalid/arbeitnow/jobs/ml-engineer-epsilon-5/?utm_source=x#apply",
+     "tags": [], "job_types": ["Contract"], "location": "Remote", "created_at": 1792400000},
+    {"slug": "ml-engineer-epsilon-5-copy", "company_name": "Epsilon", "title": "Machine Learning Engineer",
+     "description": "<p>Different slug, same URL after canonicalization.</p>", "remote": true, "url": "https://fixtures.invalid/arbeitnow/jobs/ml-engineer-epsilon-5",
+     "tags": [], "job_types": [], "location": "Remote", "created_at": 1792400000},
+    {"slug": "broken-record", "company_name": "Zeta", "title": "  ", "description": "<p>no title</p>", "url": "https://fixtures.invalid/arbeitnow/jobs/broken",
+     "tags": [], "job_types": [], "location": "Nowhere", "created_at": 1792300000}
+  ],
+  "links": {"first": "x?page=1", "last": null, "prev": null, "next": "x?page=2"},
+  "meta": {"current_page": 1, "per_page": 300, "terms": "FIXTURE terms text"}
+}

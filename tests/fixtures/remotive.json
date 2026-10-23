@@ -1,0 +1,18 @@
+{
+  "_fixture": "SYNTHETIC test data shaped like the Remotive API. Not real listings.",
+  "0-legal-notice": "FIXTURE legal notice",
+  "job-count": 3,
+  "total-job-count": 3,
+  "jobs": [
+    {"id": 9001, "url": "https://fixtures.invalid/remotive/remote-jobs/data/ml-engineer-9001", "title": "Senior ML Engineer",
+     "company_name": "Theta Inc", "category": "Data", "tags": ["python", "AI/ML"], "job_type": "full_time",
+     "publication_date": "2026-10-17T16:04:29", "candidate_required_location": "Worldwide", "salary": "",
+     "description": "<p>Ship <em>models</em>.</p><br><p>Python, PyTorch.</p>"},
+    {"id": 9002, "url": "https://fixtures.invalid/remotive/remote-jobs/writing/copywriter-9002", "title": "Freelance Copywriter",
+     "company_name": "Iota", "category": "Writing", "tags": [], "job_type": "freelance",
+     "publication_date": "2026-10-16T10:00:00+02:00", "candidate_required_location": "USA", "salary": null, "description": "<p>Words.</p>"},
+    {"id": 9003, "url": "https://fixtures.invalid/remotive/remote-jobs/data/data-engineer-9003", "title": "Data Engineer - Intern",
+     "company_name": null, "category": "Data", "tags": null, "job_type": "",
+     "publication_date": "not a date", "candidate_required_location": null, "description": null}
+  ]
+}

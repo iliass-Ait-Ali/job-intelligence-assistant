@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+
+# ALL local data: raw API snapshots, processed listings, the vector index and
+# evaluation scratch files. Listings belong to Arbeitnow / Remotive and are
+# re-creatable with `jobintel collect`; never commit them.
+data/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Human judgment sheet: lists real job titles/ids from third-party listings.
+# Remove this line if you decide to version your own grades.
+eval/judgments.csv
+
+# Personal documents: never commit CVs or extracted candidate data.
+# Only the clearly synthetic examples under eval/synthetic_cvs/ are allowed.
+*.pdf
+*.docx
+*.doc
+*.rtf
+cv/
+cvs/
+my_cv*
+*.profile.json
+private/
+uploads/
+!eval/synthetic_cvs/
+!eval/synthetic_cvs/*
