@@ -49,7 +49,8 @@ class SentenceTransformerEmbedder:
             from sentence_transformers import SentenceTransformer
         except ImportError as exc:  # pragma: no cover - depends on the environment
             raise DependencyError(
-                'sentence-transformers is not installed. Run: python -m pip install -e ".[search]"'
+                f'sentence-transformers could not be imported ({type(exc).__name__}: {exc}). '
+                'If it is not installed, run: python -m pip install -e ".[search]"'
             ) from exc
         self.name = model_name
         self.batch_size = batch_size

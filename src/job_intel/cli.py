@@ -30,6 +30,14 @@ def build_parser() -> argparse.ArgumentParser:
     from job_intel.search.cli_search import add_search_commands  # cheap: heavy deps load lazily
 
     add_search_commands(sub)
+
+    from job_intel.match.cli_match import add_match_commands
+
+    add_match_commands(sub)
+
+    from job_intel.label_cli import add_label_commands
+
+    add_label_commands(sub)
     return parser
 
 
@@ -76,6 +84,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         for noisy in ("httpx", "httpx2", "httpcore", "urllib3", "huggingface_hub", "sentence_transformers", "chromadb"):
             logging.getLogger(noisy).setLevel(logging.WARNING)
     settings = Settings.from_env()
+    if args.command == "label":
+        from job_intel.label_cli import run as run_label
+
+        return run_label(args, settings)
+    if args.command in {"profile", "match", "llm-status", "app", "match-eval", "regress"}:
+        from job_intel.match.cli_match import run as run_match
+
+        return run_match(args, settings)
     if args.command != "collect":
         from job_intel.search.cli_search import run
 

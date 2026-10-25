@@ -43,3 +43,10 @@ private/
 uploads/
 !eval/synthetic_cvs/
 !eval/synthetic_cvs/*
+
+# CV-matching judgment sheet: lists real job titles/ids from third-party listings.
+eval/match_judgments.csv
+
+# Phase 4 evaluation side files: job ids / evidence lines of third-party listings.
+eval/match_pool_meta*.json
+eval/skill_judgments*.csv

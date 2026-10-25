@@ -214,3 +214,22 @@ def test_chroma_ranking_matches_brute_force_cosine(index_path):
         assert [h.similarity for h in hits] == pytest.approx([float(sims[i]) for i in top], abs=1e-4)
         positive = [ids[i] for i in top if sims[i] > 1e-6]
         assert [h.chunk_id for h in hits][: len(positive)] == positive
+
+
+def test_truncated_approximate_results_trigger_an_exact_fallback(index_path):
+    index = open_build(index_path)
+    index.sync(jobs(), EMB)
+    qv = EMB.embed_queries(["spark airflow pipelines"])[0]
+    expected = [h.chunk_id for h in index.query(qv, 20)]
+    real_query = index._col.query
+
+    def truncated(**kwargs):  # an HNSW graph that only reaches a few nodes
+        res = real_query(**kwargs)
+        return {k: ([v[0][:3]] if isinstance(v, list) and v and isinstance(v[0], list) else v) for k, v in res.items()}
+
+    index._col.query = truncated
+    got = index.query(qv, 20)
+    assert len(got) == 20 and [h.chunk_id for h in got][:2] == expected[:2]
+    assert all(abs(h.similarity - (1 - h.distance)) < 1e-6 for h in got)
+    filtered = index.query(qv, 50, job_ids=["arbeitnow:syn-09"])  # pre-filter still applies in the fallback
+    assert {h.job_id for h in filtered} == {"arbeitnow:syn-09"} and len(filtered) == index.job_table()["arbeitnow:syn-09"].n_chunks

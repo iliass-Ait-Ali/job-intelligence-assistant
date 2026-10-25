@@ -1,0 +1,35 @@
+Camille Exemple
+Ingénieur Data | Lyon, France
+camille.exemple@example.invalid
+
+PROFIL
+Ingénieur data avec une expérience en pipelines de données. À la recherche d'un poste d'ingénieur data en CDI.
+
+EXPÉRIENCES PROFESSIONNELLES
+Ingénieur Data - Exemple Logistique, Lyon
+Septembre 2022 - Présent
+- Conception de pipelines ETL avec Apache Airflow et PySpark sur Databricks (AWS).
+- Modélisation de l'entrepôt de données Snowflake avec dbt.
+- Mise en place de tests de qualité des données et de CI/CD avec GitHub Actions.
+
+Stage Data Engineer - Exemple Banque, Paris
+Mars 2022 - Août 2022
+- Migration de traitements SQL vers PostgreSQL et automatisation avec Python.
+
+FORMATION
+Diplôme d'ingénieur - École Exemple des Mines, Saint-Étienne
+2019 - 2022
+
+PROJETS
+Plateforme de streaming
+- Ingestion d'événements avec Kafka et traitement avec Spark, déploiement avec Docker et Terraform.
+
+COMPÉTENCES
+Langages : Python, SQL, Scala
+Technologies : Spark, Airflow, dbt, Kafka, Docker, Terraform, AWS, Snowflake, PostgreSQL
+
+LANGUES
+Français (langue maternelle), Anglais (courant, B2), Allemand (notions)
+
+CENTRES D'INTÉRÊT
+Escalade. (CV SYNTHÉTIQUE créé pour des tests logiciels - personne fictive.)

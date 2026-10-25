@@ -1,248 +1,221 @@
 # AI-Powered Job & Internship Intelligence Assistant
 
-Phase 1 collects Data / ML / AI job and internship listings from two public APIs, cleans and
-normalizes them, filters for relevant roles, removes duplicates and exports
-`data/processed/jobs.csv` and `data/processed/jobs.jsonl`.
+A local, privacy-preserving application that **collects real job listings, searches them semantically (French, English, German),
+matches them to a candidate's CV, and explains every recommendation with evidence taken from the CV and the listing**.
+It is built to be *evaluated*: every quality claim in this README is either measured (and shown with its caveats) or explicitly
+marked as **not yet measured**.
 
-**Phase 2** (after the Phase 1 sections) adds local semantic job search: SentenceTransformers + ChromaDB, a BM25 baseline and a human-judged evaluation framework.
+> **Status.** Pipeline, retrieval (BM25, semantic, hybrid), CV matching, grounded explanations and the Gradio app are implemented
+> and covered by 476 offline tests. Retrieval and matching *quality* are **not yet established**: the evaluation tooling is built and
+> the human judgments it needs have not been entered (see [Results](#results-what-is-measured-and-what-is-not)).
 
-**Not built yet:** Llama / RAG generation, CV matching, Gradio, Docker.
+## The problem
 
-# Phase 1 - Data collection
+Job boards return keyword matches and say nothing about *why* a listing fits a person. A candidate with a data-science CV
+searching in French and English misses relevant roles (vocabulary and language gaps), cannot tell hard requirements from
+nice-to-haves, and gets no signal about what is missing. This project explores a transparent alternative that a recruiter
+or hiring manager could audit:
 
-| Source | Endpoint | Notes |
-|---|---|---|
-| Arbeitnow | `https://www.arbeitnow.com/api/job-board-api` | Free, paginated (up to ~300 jobs/page), mostly Europe |
-| Remotive | `https://remotive.com/api/remote-jobs` | Remote jobs only; the public endpoint currently returns a small sample (9 jobs at the time of writing) |
+* retrieval that handles multilingual queries (semantic + lexical, fused);
+* matching with **explicit, inspectable rules** (exact vs transferable vs unverified skills, hard constraints vs preferences,
+  *unknown is never a mismatch*) instead of an opaque "87% match" score;
+* explanations in which **every statement cites a CV line and a listing line**, checked by a verifier before display;
+* everything running **locally** (CVs never leave the machine).
 
-## Install and run (Windows PowerShell, Python 3.11+)
+## What it looks like
 
-```powershell
-cd job-intelligence-assistant
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1          # if blocked: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-python -m pip install -e ".[dev]"
-
-Copy-Item .env.example .env           # optional: put a contact address in JOBINTEL_CONTACT
-
-jobintel collect                      # or: python -m job_intel collect
-jobintel collect --max-pages 3        # fewer Arbeitnow pages
-jobintel collect --sources arbeitnow  # one source only
-jobintel collect --force-refresh      # ignore fresh raw snapshots and call the APIs again
-
-pytest                                # offline tests, no network needed
-```
-
-`collect` prints a per-source table and the totals, and writes:
-
-| File | Content |
+| Profile extracted from a CV (synthetic) | Ranked recommendations with evidence |
 |---|---|
-| `data/processed/jobs.csv` | final records (UTF-8 with BOM so Excel opens it correctly) |
-| `data/processed/jobs.jsonl` | same records, one JSON object per line |
-| `data/processed/collection_summary.json` | all counts, per-source stats, errors, attribution |
-| `data/raw/<source>_<UTC time>.json.gz` | untouched API responses (git-ignored, last 3 kept) |
+| ![profile](docs/screenshots/01_profile.png) | ![recommendations](docs/screenshots/03_recommendations.png) |
 
-Record schema: `id, title, company, location, job_type, remote, description, source,
-source_url, published_at, collected_at`. Missing values are `null` in JSONL and empty cells in CSV.
-`published_at`/`collected_at` are ISO-8601 UTC. `job_type` is one of `internship`,
-`working_student`, `freelance`, `contract`, `part_time`, `full_time`, `temporary`, `permanent`
-or null (providers use mixed-language labels such as "Unbefristeter arbeitsvertrag"; a title with
-"Praktikum", "Internship" or "Werkstudent" overrides the label).
+| Grounded explanation (deterministic mode, Ollama not running) | Side-by-side comparison |
+|---|---|
+| ![explanation](docs/screenshots/04_explanation.png) | ![comparison](docs/screenshots/05_comparison.png) |
+
+Screenshots use a **synthetic** CV (`eval/synthetic_cvs`) and show real Arbeitnow listings with their original links.
+Regenerate them with `python scripts/capture_screenshots.py`.
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    subgraph Data["Phase 1 - data engineering"]
+        API["Arbeitnow / Remotive APIs"] -->|"polite, timeouts, cached snapshots"| ETL["clean - normalise - relevance filter - deduplicate"]
+        ETL --> JOBS[("jobs.jsonl: 191 listings")]
+    end
+    subgraph Search["Phase 2 - retrieval"]
+        JOBS --> CH["tokenizer-aware chunking: 1,074 chunks"] --> EMB["multilingual-e5-base (CPU)"] --> VDB[("ChromaDB")]
+        JOBS --> BM["BM25 baseline"]
+        VDB --> HYB["hybrid: Reciprocal Rank Fusion"]
+        BM --> HYB
+    end
+    subgraph Match["Phase 3 - CV matching and RAG"]
+        CV["CV: PDF / text"] --> PAR["rule-based parser -> Pydantic CandidateProfile"] --> QRY["queries: roles, skills, each experience / project"]
+        QRY --> HYB
+        PAR --> CON["hard constraints: satisfied / violated / unknown"]
+        CON -->|"filter BEFORE retrieval"| HYB
+        HYB --> RANK["evidence level, role match, unmet requirements, skill coverage"]
+        RANK --> PACK["evidence pack CV1.. / JOB1.. (+ passages retrieved from ChromaDB)"]
+        PACK --> LLM["local Llama via Ollama (optional)"] --> VER["verifier: citations, entities, numbers, injection"]
+        PACK --> DET["deterministic explanation"] --> VER
+        VER --> UI["Gradio app on 127.0.0.1"]
+    end
+    subgraph Eval["Phase 4 - evaluation"]
+        LAB["blinded labelling CLI"] --> MET["nDCG / P@5 / MRR / recall, Wilson + bootstrap intervals"]
+        DIAG["label-free diagnostics and regression baselines"]
+    end
+    HYB -.-> MET
+    RANK -.-> MET
 ```
-src/job_intel/
-  cli.py            argparse entry point (`jobintel collect`), prints the summary
-  config.py         Settings from environment / .env (timeouts, delay, TTLs, User-Agent)
-  http.py           HttpClient: User-Agent, connect+read timeouts, spacing between requests, retry with backoff
-  connectors/
-    base.py         Connector interface: fetch() -> raw records, normalize(raw) -> Job
-    arbeitnow.py    pagination + record normalization
-    remotive.py     single request + record normalization
-  textutils.py      HTML -> text, whitespace, dates, job_type mapping, URL canonicalization (pure functions)
-  models.py         Job dataclass and the exported column list
-  relevance.py      rule-based role filter and ranking score
-  dedup.py          duplicate removal
-  storage.py        raw snapshot cache + atomic CSV/JSONL/JSON writers
-  pipeline.py       orchestrates the ETL run and collects the counts
-  search/           Phase 2, see below
-tests/              offline pytest suite + SYNTHETIC fixtures (tests/fixtures)
-```
 
-Adding a source means adding one `Connector` subclass; nothing downstream changes.
+### Stack
 
-## The ETL pipeline
+| Layer | Choice | Why |
+|---|---|---|
+| Language / packaging | Python 3.11+, `pyproject.toml`, optional extras (`search`, `app`) | Phase 1 installs with two dependencies only |
+| Ingestion | `requests`, own retry/backoff/pacing client, gzip raw snapshots | polite to the providers, reproducible reruns |
+| Embeddings | `intfloat/multilingual-e5-base` (SentenceTransformers, CPU) | multilingual, query/passage prefixes, MIT license |
+| Vector store | ChromaDB (persistent, cosine) | local, metadata filters, simple to inspect |
+| Lexical baseline | in-house BM25 (no dependency) | a baseline you can read in 60 lines |
+| CV parsing | `pypdf` + rule-based parser + Pydantic models | deterministic, testable, no CV text leaves the process |
+| LLM (optional) | Ollama, default `llama3.2:3b`, loopback only | local; the app works without it |
+| UI | Gradio, bound to 127.0.0.1, analytics off | |
+| Tests | pytest, real ChromaDB on synthetic fixtures, mock Ollama HTTP server | no network, no model download |
 
-1. **Extract** - each connector fetches raw JSON. If a raw snapshot for that source is younger than its
-   TTL (Arbeitnow 1 h, Remotive 6 h) it is reused instead of calling the API again; this keeps
-   reruns polite and respects Remotive's "at most ~4 requests/day" guidance. Every live response is
-   saved to `data/raw/` before anything is parsed.
-2. **Transform - normalize** - HTML is stripped (scripts/styles dropped, entities decoded, list items become
-   `- ` bullets, paragraph breaks kept), whitespace collapsed, dates converted to UTC, `null`/empty values
-   become `None`. A record without a title or URL is counted as *invalid* and skipped; one bad record never
-   aborts the run.
-3. **Transform - filter** (`relevance.py`) - a listing is kept if its **title** names a target role
-   (Data Scientist, Data Analyst, ML Engineer, AI Engineer, Data Engineer, NLP, plus BI / analytics
-   engineer / LLM variants in English, German and French), or if it is an internship / working-student role
-   with a data/AI signal (data term in title or tags, an AI term in a title that is not about marketing,
-   design, sales etc., or two strong data-science skills in the description). Descriptions never qualify a
-   regular job on their own, so keyword-stuffed text cannot smuggle in unrelated roles. Survivors are
-   ranked: title match 10 (+2 per extra family), +5 internship, up to +5 for skill mentions, newest first.
-4. **Transform - deduplicate** (`dedup.py`) - the best-ranked copy wins. Duplicates are matched by stable
-   `id` (`<source>:<provider id>`), by canonical `source_url` (host case, trailing slash, `utm_*`, fragment
-   ignored) and, because live data showed reposts under new ids and URLs, by identical
-   title + company + location. Removals are reported per rule.
-5. **Load** - atomic write of CSV, JSONL and the summary JSON (a failed run never leaves half-written files,
-   and if *every* source fails the previous exports are left untouched and the exit code is 1).
+## Data provenance and limits
 
-Counts reported: `total fetched -> invalid skipped -> normalized -> filtered out (not relevant) -> relevant
--> duplicates removed -> final`.
+* **Source:** the public Arbeitnow API (and Remotive, which currently returns a 9-job sample with no relevant role). Listings keep their
+  original URL and source name; Remotive listings may not be passed to third-party aggregators.
+* **Snapshot:** 2,915 listings fetched on 2026-10-23, 193 relevant (title-based filter for data / ML / AI roles and data-flavoured
+  internships), 2 near-duplicates removed, **191 kept**, published 2026-10-16 to 2026-10-23, 118 companies. Languages (rough heuristic):
+  about 127 English, 28 French, 19 German, 17 Dutch.
+* **Known gaps:** 47 listings (25%) state no job type, only 14 say "remote", 8 have no location, and several postings are the same role
+  repeated per city (so top results can be clusters). The job data and the vector index are **git-ignored** (they are third-party content).
 
-## Results of the live run (2026-10-23)
+## Method
 
-| Step | Count |
-|---|---|
-| Total fetched | 2,915 (Arbeitnow 2,906 over 10 pages, Remotive 9) |
-| Invalid, skipped | 0 |
-| Filtered out as not relevant | 2,722 |
-| Relevant | 193 |
-| Duplicates removed | 2 (title + company + location reposts) |
-| **Final records** | **191** (all Arbeitnow; 28 internships, 2 working-student roles) |
+**Retrieval.** Descriptions (median 1,300 tokens) are split into <=300-token chunks that each start with a `title | company | location | type`
+header; token counts use the model's own tokenizer and over-length chunks are an error, never a silent truncation. A job's semantic score is
+its best chunk's cosine similarity. Search over-fetches chunks until `k` distinct jobs are covered (so one long posting cannot crowd out
+others) and applies metadata filters *before* the vector search. **Hybrid** = Reciprocal Rank Fusion, `1/(60+rank)`, of the full semantic and
+BM25 rankings (the constant is the published default, not tuned).
 
-The 50+ target is met, but only through Arbeitnow: the Remotive endpoint returned 9 listings, none of
-them a target role. Numbers change on every run because both boards update continuously.
+**Matching.** The CV becomes a `CandidateProfile` (education, skills with the CV lines that mention them, dated experiences, projects, spoken
+languages). Nothing is inferred: no proficiency, no years of experience beyond bounds computed from stated dates, no contact details.
+Queries are built per role, per skill group, per experience and per project. Each retrieved job gets: *exact* / *transferable* (a related skill
+from the closest related group, never counted as exact) / *not evidenced* skills against requirements extracted from the listing (with the
+listing line as evidence); six constraints, each `satisfied | violated | unknown` - only a **clear violation of a constraint you marked hard**
+excludes a job, and exclusions are listed with their reason; and an ordinal evidence level from documented rules. **There is no percentage
+score**: it could not be calibrated, so the UI shows counts and evidence instead.
 
-## Failure handling
+**Explanations.** Evidence pack (`CV1...`, `JOB1...`) -> deterministic template or local LLM (JSON schema, temperature 0) -> **verifier**: cited ids
+must exist and be of the right kind; skills, degrees, employers/places, skill levels and numbers named in a claim must occur in the cited
+text; probabilities, salaries and hiring guarantees are rejected. Failures fall back to the labelled deterministic mode.
 
-Timeouts, connection errors, HTTP 429/5xx are retried with backoff (honouring `Retry-After`); other 4xx and
-invalid JSON fail fast. If a later Arbeitnow page fails, the earlier pages are kept and a warning is
-reported. A schema change (missing `data` / `jobs` list) raises a clear error. One source failing does not
-stop the other. All of this is covered by the offline tests.
+## Evaluation methodology
 
-## Terms of use and attribution
+* **Human judgments, never generated.** Graded 0/1/2 through a **blinded, resumable terminal tool** (`jobintel label ...`): no system
+  names, ranks or scores on the card; saved after every answer. Instructions: [docs/LABELING_GUIDE.md](docs/LABELING_GUIDE.md).
+* **Pooling** (top 10 of BM25, semantic and hybrid, merged and shuffled) plus **exhaustive** judging of three small queries so *true*
+  recall can be computed; recall is printed only for queries whose eligible jobs are all judged, otherwise only labelled *pooled* recall.
+* **Metrics:** nDCG@10 (gain 2^g-1), Precision@5 and MRR@10 at two explicit binary thresholds (grade >= 1 and >= 2), judgment coverage
+  (`judged@10`), per-query tables, paired win/tie/loss counts, **bootstrap 95% intervals over queries** (n >= 5) - no significance claims.
+* **CV matching audit:** ranking quality of the documented ranking vs retrieval order on the *same* eligible jobs; role-relevance and
+  eligibility agreement with the human; **incorrect exclusions** (an audit sample of jobs retrieval liked but constraints excluded);
+  **missing relevant jobs** (a random sample of eligible jobs outside the top 10); precision of exact vs transferable skill claims
+  (all with Wilson intervals).
+* **Label-free regression baselines** (`jobintel regress`): parser accuracy on synthetic CVs with known ground truth, pool coverage of
+  eligible jobs, evidence provenance and a verifier stress test. Run after every change; exit code 1 on regression.
+* **Mock vs real:** explanation sources are tagged `deterministic`, `llm-stub` or `llm-ollama`; no report merges them, and none claims a real
+  model run unless Ollama was actually used.
 
-* Every record keeps the original listing URL (`source_url`) and `source` name. Please keep showing both
-  wherever the data is displayed.
-* **Arbeitnow**: free public API, "please do not abuse", link back to the site. The client sends a
-  descriptive User-Agent, waits 2 s between pages and caps pages per run.
-* **Remotive**: jobs may be shared further only with a link to the Remotive URL and Remotive named as the
-  source; they must **not** be submitted to third-party job aggregators (e.g. Jooble, Google Jobs, LinkedIn
-  Jobs); the data is delayed by 24 h. Do not use the data to collect sign-ups. Check
-  <https://remotive.com/api-documentation> before publishing any Remotive data. This repo's
-  `data/processed/` files contain Remotive records whenever Remotive returns relevant ones, so review
-  the terms before pushing them to a public repository.
+## Results: what is measured and what is not
 
-## Limitations
+### Measured (no human labels needed; caveats in the last column)
 
-* Relevance is rule-based on titles; roles with unusual titles are missed and a few early-career
-  postings with a weak data signal get through (e.g. "Electromagnetic Simulation Intern").
-  Titles in languages other than English/German/French/Dutch-ish are only partly covered.
-* The title + company + location rule can merge two genuinely separate openings with identical wording.
-* Arbeitnow pagination is capped at 10 pages (about 3,000 listings, roughly the newest week); raise
-  `--max-pages` for more.
-* Remotive's public endpoint is a small sample, so it contributes little.
-* Remotive timestamps carry no timezone and are interpreted as UTC.
-* `remote` is `false` for Arbeitnow jobs that do not say they are remote (not necessarily on-site).
-* Test fixtures are synthetic (URLs use the reserved `.invalid` domain); they are not real listings.
+| Measurement | Before | After | Caveat |
+|---|---|---|---|
+| Share of the jobs that survive the hard constraints that actually reach the candidate pool (student CV: 18 eligible of 191) | 56% (10/18) | **100% (18/18)** | a *coverage* metric of the system's own rules, not a quality metric |
+| Same, French data-engineer CV (64 eligible) | 53% (34/64) | **92% (59/64)** | the 5 missed jobs matched none of the queries' top 30 |
+| Same, ML-engineer CV (151 eligible, pool capped at 80) | 50% | 53% | pool cap by design; ranking decides what is shown |
+| Parser on 40 synthetic CVs / 10 layouts: degree level, experience dates, language F1 | 0.80 / 0.80 / 0.89 | **1.00 / 1.00 / 1.00** | the corpus and the fix were written by the same person; this is a regression suite, **not** a real-CV accuracy |
+| Verifier rejection rate on 351 constructed corruptions (invented skill/degree/number/probability/employer/level, bad citations) | 92% (323/351) | **100%** | corruptions were authored by me; subtle qualitative claims without entities are only caught by the support heuristic |
+| Cited evidence snippets that occur verbatim in the CV / listing | - | 96/96 | checks the evidence trail, not truthfulness |
+| Deterministic explanation items passing the verifier | - | 95/95 | consistency check only |
+| Test suite | 408 | **476 passing** | offline; mock Ollama server, real ChromaDB |
+| Latency (CPU i7-13700HX, deterministic mode) | | parse 0.6 s; recommend 2.2 s warm (14.5 s incl. model load); explain 2.6 s | no real LLM timing exists yet |
 
----
+### Not yet measured - waiting for human judgments
 
-# Phase 2 - Semantic job search
+| Question | Tool | Pairs to grade |
+|---|---|---|
+| Is hybrid better than BM25 or semantic? nDCG@10, P@5, MRR@10, recall | `jobintel label retrieval` -> `jobintel eval run` | 167 |
+| How good is the CV-to-job ranking? Are exclusions correct? What relevant jobs does it miss? Is role relevance right? | `jobintel label matching` -> `jobintel match-eval run` | 84 |
+| How often are "exact" / "transferable" skill claims right? | `jobintel label skills` -> `jobintel match-eval skills-score` | 32 |
+| Are explanation claims actually supported? (deterministic now; a real Llama run needs Ollama) | audit CSV -> `jobintel match-eval grounding-score` | about 95 |
 
-Natural-language search over the processed jobs (French, English, German, Dutch...) with a local
-vector index, plus a lexical BM25 baseline and a framework to compare them on **human relevance
-judgments**. No performance claim is made until those judgments exist.
+**No claim that semantic or hybrid retrieval beats BM25 is made anywhere in this repository.**
 
-## Install and run (Windows PowerShell)
+### Failures found by the evaluation work (and what was done)
+
+| Finding | Cause | Action |
+|---|---|---|
+| "77 of 80 pooled jobs excluded" for the student CV | not a logic error: constraints were applied *after* retrieval, so most of an 80-job pool were full-time jobs that were then (correctly) excluded, and **5 of the 8 jobs that satisfy "internship in Paris" never reached the pool** | hard constraints now applied before retrieval (nothing loosened: same decisions, same exclusion reasons) |
+| Jobs with no stated type but "Stage ..." in the title were "unknown" | Phase 1 maps types from provider labels | title evidence now satisfies an internship preference (and "Senior ..." violates an internship-only one) |
+| Parser returned no experience/degree/language for CVs without recognised headings | sections were required | date/degree/language fallbacks (limited to one entry per line) |
+| Verifier accepted invented employers/schools and skill levels ("expert in ...") | only skills, degrees, numbers were checked | proper-noun and skill-level checks |
+| A template claimed three related skills but cited one snippet | caught by the verifier on real data | claim now names only cited skills |
+| A quoted listing line was cut before the skill it was meant to show | fixed-length truncation | windowing around the skill mention |
+
+### Remaining limitations
+
+* Retrieval and matching quality are unmeasured; one annotator and 10 queries / 3 synthetic candidates will give *descriptive* results only.
+* No real Llama run exists (Ollama is not installed; installing it needs explicit approval).
+* The rule-based parser and the ~150-skill taxonomy are hand-made; real CV layouts will be harder than the synthetic ones.
+* 25% of listings lack a job type; near-duplicate postings cluster in rankings; the location gazetteer covers only the cities in the data.
+* Qualitative claims without named entities are weakly checked; the verifier is a safeguard, not proof of truth.
+* No OCR, no DOCX, no deployment (by design, for now).
+
+## Privacy and security
+
+* CVs are processed in memory only; uploaded temp files are deleted after reading; nothing is written unless you ask (`--out`).
+* The only network call that can carry CV-derived text is to **Ollama on loopback**; any other host is refused before a request is made.
+* The Gradio app binds to 127.0.0.1 with analytics off. All HTML shown from CVs/listings is escaped; only http(s) links are rendered.
+* **Prompt-injection defences**: instruction-like lines in CVs/listings are withheld from the model and cited nowhere, snippets travel as
+  JSON string values, the model has no tools, and the verifier removes any claim the evidence does not support. This reduces, not eliminates, the risk.
+* `.gitignore` excludes `data/` (listings, raw snapshots, vector index, evaluation scratch), `*.pdf`, `*.docx`, `*.profile.json`, `cvs/`,
+  `private/`, `uploads/`, `.env` and the judgment sheets. Only the clearly synthetic CVs in `eval/synthetic_cvs/` are tracked.
+  A real CV may be evaluated locally (see the labeling guide) and never appears in tests or tracked outputs.
+
+## Run it (Windows PowerShell)
 
 ```powershell
 cd job-intelligence-assistant
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev,search]"     # adds sentence-transformers (CPU torch) and chromadb
+python -m venv .venv ; .\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev,app]"       # app = gradio + pypdf + the search stack (CPU torch, chromadb)
 
-jobintel index                               # embed data/processed/jobs.jsonl -> data/index/chroma
-jobintel index-status                        # what is indexed and with which settings
-
-jobintel search "stage data analyst a Paris"
-jobintel search "LLM agents and RAG" --engine both -k 5          # semantic and BM25, same filters
-jobintel search "data engineer" --location Zurich --job-type full_time --since 2026-10-15
-jobintel search "machine learning" --max-per-company 2           # optional diversity (display only)
-
-pytest                                       # 210 offline tests (search tests need the [search] extra)
+jobintel collect                            # Phase 1: fetch + clean (live API calls; reuses fresh cached snapshots)
+jobintel index                              # embed the jobs (~8 min on CPU for 1,074 chunks; downloads a 1.1 GB model once)
+jobintel app --open                         # http://127.0.0.1:7860
+jobintel match --cv eval\synthetic_cvs\cv_fr_data_engineer.txt --explain 2
+pytest                                      # 476 offline tests
+jobintel regress                            # label-free regression check
 ```
 
-The first `jobintel index` downloads `intfloat/multilingual-e5-base` (about 1.1 GB, cached under
-`~/.cache/huggingface`). Everything after that is offline. CPU only; no GPU is used or needed.
-`jobintel collect` still works with the plain Phase 1 install (the search libraries are imported lazily).
-If the model cannot be downloaded or a dependency is missing, the CLI prints a one-line error with the fix
-(`pip install -e ".[search]"`, or set `HF_HUB_OFFLINE=1` once the model is cached) instead of a traceback.
+Optional local LLM (not required): install [Ollama](https://ollama.com), `ollama pull llama3.2:3b`, check with `jobintel llm-status`.
+All commands, flags and design notes: [docs/USAGE.md](docs/USAGE.md). Interview preparation: [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md).
 
-## How it works
+## Repository map
 
-* **Documents.** Each job is split into chunks of at most 300 *model* tokens (about 40 tokens of overlap).
-  Every chunk starts with a header `title | company | location | job type | remote`, so a chunk from the middle of a
-  1,300-token posting still says which job it is. Tokens are counted with the model's own tokenizer on the exact
-  text the model receives (including the `passage: ` prefix and special tokens); each chunk is re-measured, and a job
-  that cannot be chunked within the limit raises an error instead of being truncated.
-* **Index.** ChromaDB `PersistentClient` at `data/index/chroma`, cosine space. Chunk id = `<job id>#<n>`. Embeddings are
-  computed by this project (normalized), never by Chroma. A job's score is the cosine similarity of its best chunk.
-  Chroma reports cosine *distance* = `1 - similarity`; the code keeps both explicitly and the CLI prints similarity.
-* **Idempotent updates.** Each job stores a content hash. `jobintel index` adds new jobs, re-embeds changed ones (old chunks
-  are deleted first), deletes jobs that left the dataset, repairs jobs left half-written by an interrupted run and skips the
-  rest. Running it twice embeds nothing the second time.
-* **Configuration check.** Model name, embedding dimension, prefixes, chunk size/overlap, chunker version and distance are stored
-  with the index. Indexing with different settings, or querying with another `--model`, is refused with an explanation;
-  `jobintel index --rebuild` drops and rebuilds. A stale index (jobs file changed since indexing) triggers a warning.
-* **Retrieval completeness.** Search fetches chunks, groups them by job and **doubles the number of chunks until k distinct jobs
-  are covered** or every eligible chunk has been seen, so a posting with dozens of similar chunks cannot crowd out other jobs.
-  Once k jobs are covered the top-k is exact: any unseen job has all its chunks below the lowest score fetched.
-* **Filters run before the vector search.** The eligible job ids are computed first and passed to Chroma as a `where job_id in (...)`
-  clause, so a filter never operates on a fixed-size candidate list. BM25 uses the very same eligible set.
-* **Company cap.** `--max-per-company N` is a display option (off by default). Evaluation always uses the uncapped ranking.
-* **Snippets** show the line of the best-matching chunk with the most words in common with the query (or the start of the chunk);
-  this is a readability aid, not an explanation of the model's reasoning.
-* **Scores.** E5 cosine similarities live in a narrow band (about 0.8-0.9), so only the *ranking* and the matched text are meaningful;
-  scores are not probabilities and BM25 scores are not comparable with cosine scores.
-
-### Filter semantics (missing / unknown values)
-
-| Option | Behaviour |
-|---|---|
-| `--job-type T` | exact canonical type. Jobs without a type (about 25% of the data) are **excluded**, unless you pass `--job-type unknown` or `--include-unknown`. |
-| `--remote` | only listings that **explicitly** say remote. Phase 1 stores `remote=false` for "not stated", so those listings are excluded and `--include-unknown` does not bring them back. There is no "not remote" filter. |
-| `--location L` | accent- and spelling-insensitive (Zurich = Zürich, Nederland = Netherlands, UK = United Kingdom), city-to-country aware for the cities in the data (Amsterdam matches Netherlands), repeatable (OR). Jobs without a location are excluded unless `--include-unknown`. Cities outside the small gazetteer match only by name. |
-| `--since DATE` | published on/after the date. Jobs without a publication date are excluded unless `--include-unknown`. |
-| `--source S` | `arbeitnow` or `remotive`. |
-
-## Human evaluation (semantic vs BM25)
-
-All relevance labels come from a person. The tool never creates or guesses a grade.
-
-```powershell
-jobintel eval pool          # unions the top-10 of both systems per query into eval/judgments.csv (blinded, shuffled, ungraded)
-# read the postings in data\eval\review.md, then fill the `grade` column of eval/judgments.csv: 0, 1 or 2
-jobintel eval run           # scores both systems; refuses to print metrics while no query is fully graded
-jobintel eval run --per-query --report-json data\eval\report.json
 ```
-
-* `eval/queries.json` has 10 queries (EN/FR/DE, some with filters); append more, up to 20. Each query is evaluated with its own eligibility
-  filters, identically for both engines, with no company cap.
-* Grades: 2 = highly relevant, 1 = partially relevant, 0 = not relevant. A query is scored only when its whole pool is graded;
-  partially graded queries are listed as pending. Re-running `eval pool` only appends new items and keeps existing grades.
-* Metrics: nDCG@10 (graded; gain 2^grade-1; the ideal ranking comes from the judged pool), Precision@5 and MRR@10 at **two explicit binary
-  thresholds** (grade >= 1 and grade >= 2), and *pooled* recall@10. Pooled recall is relevant results found divided by relevant items in the
-  judged pool; it is **not** full-corpus recall and it favours the systems that built the pool.
-* `judged@10` reports how many of each system's top 10 have a grade; unjudged results count as not relevant.
-* With 10-20 queries and one annotator the averages are descriptive: use the per-query table and win/tie/loss counts, not significance claims.
-
-## Phase 2 limitations
-
-* Embedding on a laptop CPU is slow (about 2 chunks/s with `multilingual-e5-base` on this machine); a re-index after changing settings takes minutes.
-* Several postings of one company share long identical text (for example one role posted per city). They are not duplicates, so they are all
-  kept and can fill the top of a ranking; use `--max-per-company` for display.
-* The location gazetteer only covers the cities seen so far; spelling aliases are manual.
-* `job_type` is missing for about a quarter of the jobs and `remote` cannot express "not remote" (see the filter table).
-* The index and `data/` are git-ignored on purpose: they contain third-party listings. `eval/judgments.csv` stores only ids and titles.
-  Remotive listings must not be passed to third-party sites; use `jobintel index --exclude-source remotive` to keep them out of the index.
-* Retrieval quality has not been measured: it needs your judgments in `eval/judgments.csv`.
+src/job_intel/
+  connectors/ pipeline.py ...   Phase 1 ETL (Arbeitnow, Remotive, cleaning, dedup, cache)
+  search/                       chunking, ChromaDB index, BM25, hybrid RRF, filters, retrieval evaluation
+  match/                        CV text + parser, requirements, matcher, diagnostics, evaluation, extraction eval
+  rag/                          evidence packs, Ollama client, explanations, verifier, audit (provenance, stress test)
+  app/                          Gradio interface (controller, renderer)
+  labeling.py  label_cli.py     blinded human-judgment tool        regress.py  label-free baselines
+eval/                           queries, synthetic CVs, committed baselines (no judgments / job text)
+docs/                           labeling guide, detailed usage, screenshots        scripts/  screenshot capture
+tests/                          476 offline tests
+```

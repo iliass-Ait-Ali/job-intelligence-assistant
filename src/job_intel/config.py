@@ -29,6 +29,10 @@ class Settings:
     chunk_max_tokens: int = 300
     chunk_overlap_tokens: int = 40
     eval_dir: Path = Path("eval")
+    # Phase 3 (local LLM through Ollama; loopback only)
+    llm_model: str = "llama3.2:3b"
+    ollama_url: str = "http://127.0.0.1:11434"
+    llm_timeout: float = 180.0
 
     @property
     def raw_dir(self) -> Path:
@@ -70,6 +74,9 @@ class Settings:
             chunk_max_tokens=int(os.getenv("JOBINTEL_CHUNK_MAX_TOKENS", 300)),
             chunk_overlap_tokens=int(os.getenv("JOBINTEL_CHUNK_OVERLAP_TOKENS", 40)),
             eval_dir=Path(os.getenv("JOBINTEL_EVAL_DIR", "eval")),
+            llm_model=os.getenv("JOBINTEL_LLM_MODEL", "llama3.2:3b"),
+            ollama_url=os.getenv("JOBINTEL_OLLAMA_URL", "http://127.0.0.1:11434"),
+            llm_timeout=float(os.getenv("JOBINTEL_LLM_TIMEOUT_S", 180)),
             ttl_hours={
                 "arbeitnow": float(os.getenv("JOBINTEL_ARBEITNOW_TTL_H", 1)),
                 "remotive": float(os.getenv("JOBINTEL_REMOTIVE_TTL_H", 6)),

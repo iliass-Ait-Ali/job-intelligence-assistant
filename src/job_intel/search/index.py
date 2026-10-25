@@ -106,7 +106,10 @@ def _chromadb():
         import chromadb
         from chromadb.config import Settings
     except ImportError as exc:  # pragma: no cover - depends on the environment
-        raise DependencyError('chromadb is not installed. Run: python -m pip install -e ".[search]"') from exc
+        raise DependencyError(
+            f'chromadb could not be imported ({type(exc).__name__}: {exc}). '
+            'If it is not installed, run: python -m pip install -e ".[search]"'
+        ) from exc
     return chromadb, Settings
 
 
@@ -242,7 +245,48 @@ class JobIndex:
             hits.append(
                 ChunkHit(cid, meta["job_id"], int(meta["chunk_index"]), doc or "", float(dist), max(-1.0, min(1.0, 1.0 - float(dist))))
             )
+        expected = min(max(1, n_results), self._eligible_count(where))
+        if len(hits) < expected:
+            # The approximate (HNSW) search can return fewer neighbours than exist, e.g. when many chunks are
+            # near-identical. Callers rely on "fewer than asked" meaning "no more candidates", so fall back to an
+            # exact scan, which is cheap at this scale.
+            log.warning("HNSW returned %d of %d requested chunks; using an exact scan", len(hits), expected)
+            hits = self._exact_query(vector, max(1, n_results), where)
         return hits
+
+    def _eligible_count(self, where: dict | None) -> int:
+        if where is None:
+            return self.count_chunks()
+        return len(self._col.get(where=where, include=[])["ids"])
+
+    def _exact_query(self, vector: Sequence[float], n_results: int, where: dict | None) -> list[ChunkHit]:
+        import numpy as np
+
+        ids: list[str] = []
+        docs: list[str] = []
+        metas: list[Mapping[str, Any]] = []
+        vectors = []
+        offset = 0
+        while True:
+            page = self._col.get(where=where, include=["embeddings", "documents", "metadatas"], limit=_PAGE, offset=offset)
+            ids += page["ids"]
+            docs += page["documents"]
+            metas += page["metadatas"]
+            vectors += list(page["embeddings"])
+            if len(page["ids"]) < _PAGE:
+                break
+            offset += _PAGE
+        if not ids:
+            return []
+        matrix = np.asarray(vectors, dtype=np.float32)
+        query = np.asarray(vector, dtype=np.float32)
+        sims = (matrix @ query) / (np.linalg.norm(matrix, axis=1) * np.linalg.norm(query) + 1e-12)
+        order = sorted(range(len(ids)), key=lambda i: (-float(sims[i]), ids[i]))[:n_results]
+        return [
+            ChunkHit(ids[i], metas[i]["job_id"], int(metas[i]["chunk_index"]), docs[i] or "", 1.0 - float(sims[i]),
+                     max(-1.0, min(1.0, float(sims[i]))))
+            for i in order
+        ]
 
     # ---- writing -------------------------------------------------------------------------
 

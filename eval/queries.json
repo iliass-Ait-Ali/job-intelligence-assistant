@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "description": "Evaluation queries (text only). They contain NO relevance labels; every grade is entered by a human in eval/judgments.csv. Add queries by appending to this list (target: 20).",
+  "description": "Evaluation queries (text only; \"exhaustive\": true = every eligible job is put in the pool so true recall can be computed). They contain NO relevance labels; every grade is entered by a human in eval/judgments.csv. Add queries by appending to this list (target: 20).",
   "rubric": "2 = highly relevant (role, level and every constraint in the query are met); 1 = partially relevant (related, but misses an important aspect); 0 = not relevant.",
   "queries": [
     {"id": "q01", "lang": "en", "text": "machine learning engineer working on LLM inference optimization and GPU performance"},
-    {"id": "q02", "lang": "fr", "text": "stage data analyst à Paris", "filters": {"job_types": ["internship"], "locations": ["Paris"]}, "notes": "French query with job-type and location eligibility filters"},
+    {"id": "q02", "exhaustive": true, "lang": "fr", "text": "stage data analyst à Paris", "filters": {"job_types": ["internship"], "locations": ["Paris"]}, "notes": "French query with job-type and location eligibility filters"},
     {"id": "q03", "lang": "en", "text": "entry-level data scientist, credit risk modelling in Python"},
     {"id": "q04", "lang": "fr", "text": "ingénieur data avec Spark et Databricks pour construire des pipelines de données"},
     {"id": "q05", "lang": "en", "text": "AI engineer building LLM agents and RAG applications"},
-    {"id": "q06", "lang": "de", "text": "Praktikum oder Werkstudent im Bereich Künstliche Intelligenz", "filters": {"job_types": ["internship", "working_student"]}, "notes": "German query, job-type filter"},
+    {"id": "q06", "exhaustive": true, "lang": "de", "text": "Praktikum oder Werkstudent im Bereich Künstliche Intelligenz", "filters": {"job_types": ["internship", "working_student"]}, "notes": "German query, job-type filter"},
     {"id": "q07", "lang": "en", "text": "analytics engineer using dbt and SQL on a modern data warehouse", "filters": {"locations": ["Netherlands"]}, "notes": "location filter that must match Nederland / Netherlands / Dutch cities"},
     {"id": "q08", "lang": "en", "text": "natural language processing and text mining research role"},
-    {"id": "q09", "lang": "en", "text": "remote machine learning or data science position", "filters": {"remote": true}, "notes": "only listings that explicitly say remote"},
+    {"id": "q09", "exhaustive": true, "lang": "en", "text": "remote machine learning or data science position", "filters": {"remote": true}, "notes": "only listings that explicitly say remote"},
     {"id": "q10", "lang": "fr", "text": "analyste données junior avec Power BI ou Tableau pour le reporting"}
   ]
 }

@@ -1,0 +1,32 @@
+Sam Placeholder
+Machine Learning Engineer
+sam.placeholder@example.invalid
+
+SUMMARY
+Machine learning engineer seeking an AI engineer or machine learning engineer role working on LLM applications.
+
+EXPERIENCE
+Machine Learning Engineer - Example Analytics Ltd, London
+January 2020 - present
+- Built retrieval augmented generation (RAG) services with LangChain, ChromaDB and the OpenAI API.
+- Trained and deployed PyTorch models with MLflow, Docker and Kubernetes on AWS.
+- Wrote data pipelines with Spark and Airflow.
+
+Data Scientist - Example Insurance Group, London
+June 2017 - December 2019
+- Developed credit risk models in Python, XGBoost and scikit-learn.
+- Maintained SQL reports in PostgreSQL.
+
+EDUCATION
+MSc Machine Learning - Example University, London
+2015 - 2016
+BSc Mathematics - Example University
+2012 - 2015
+
+SKILLS
+Python, SQL, PyTorch, TensorFlow, scikit-learn, XGBoost, LangChain, ChromaDB, Docker, Kubernetes, AWS, Spark, Airflow, MLflow, Git
+
+LANGUAGES
+English (native), German (B1)
+
+(SYNTHETIC CV created for software tests - not a real person.)

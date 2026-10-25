@@ -58,12 +58,13 @@ def add_search_commands(sub: argparse._SubParsersAction) -> None:
     _common(search)
     search.add_argument("query")
     search.add_argument("-k", type=int, default=10, help="number of jobs to return (default 10)")
-    search.add_argument("--engine", choices=[*ENGINES, "both"], default=SEMANTIC)
+    search.add_argument("--engine", choices=[*ENGINES, "both", "all"], default=SEMANTIC,
+                        help="both = semantic + BM25; all = semantic + BM25 + hybrid (RRF)")
     search.add_argument("--model", help="must match the model the index was built with")
     search.add_argument("--max-per-company", type=int, metavar="N", help="presentation only: at most N jobs per company")
     _add_filters(search)
 
-    evalp = sub.add_parser("eval", help="human-judged retrieval evaluation (semantic vs BM25)")
+    evalp = sub.add_parser("eval", help="human-judged retrieval evaluation (BM25 vs semantic vs hybrid RRF)")
     esub = evalp.add_subparsers(dest="eval_command", required=True)
     for name, text in (("pool", "build/extend the blinded judgment pool"), ("run", "score systems against human grades")):
         p = esub.add_parser(name, help=text)
@@ -74,6 +75,8 @@ def add_search_commands(sub: argparse._SubParsersAction) -> None:
     esub.choices["pool"].add_argument("--depth", type=int, default=ev.K, help="top-N of each system to pool (default 10)")
     esub.choices["run"].add_argument("--per-query", action="store_true", help="also print per-query values")
     esub.choices["run"].add_argument("--report-json", type=Path, help="also write the full report as JSON")
+    esub.choices["run"].add_argument("--save-baseline", metavar="NAME", help="store these measured metrics as eval/baselines/retrieval_NAME.json")
+    esub.choices["run"].add_argument("--compare-baseline", metavar="NAME", help="show metric changes versus a saved baseline")
 
 
 def _filter_from_args(args: argparse.Namespace) -> JobFilter:
@@ -88,7 +91,7 @@ def _filter_from_args(args: argparse.Namespace) -> JobFilter:
 
 
 def format_response(resp: SearchResponse, flt: JobFilter, model: str) -> str:
-    label = f"semantic, {model}" if resp.engine == SEMANTIC else "BM25 lexical baseline"
+    label = {SEMANTIC: f"semantic, {model}", "hybrid": "hybrid: Reciprocal Rank Fusion of semantic + BM25"}.get(resp.engine, "BM25 lexical baseline")
     lines = [
         "",
         f'Query: "{resp.query}"   [{label}]',
@@ -96,6 +99,8 @@ def format_response(resp: SearchResponse, flt: JobFilter, model: str) -> str:
     ]
     if resp.engine == SEMANTIC:
         lines.append(f"Scores = cosine similarity of the best-matching chunk (higher is closer; {resp.chunks_fetched} chunks examined)")
+    elif resp.engine == "hybrid":
+        lines.append("Scores = sum of 1/(60+rank) over the semantic and BM25 rankings (only the order is meaningful)")
     else:
         lines.append("Scores = BM25 (unbounded; comparable only within this list, not with cosine scores)")
     for hit in resp.hits:
@@ -155,7 +160,7 @@ def _run(args: argparse.Namespace, settings: Settings) -> int:
 
     if args.command == "search":
         flt = _filter_from_args(args)
-        engines = ENGINES if args.engine == "both" else (args.engine,)
+        engines = {"both": (SEMANTIC, "bm25"), "all": ENGINES}.get(args.engine, (args.engine,))
         for engine in engines:
             resp = searcher.search(args.query, engine=engine, k=args.k, flt=flt, max_per_company=args.max_per_company)
             print(format_response(resp, flt, model))
@@ -176,12 +181,33 @@ def _run(args: argparse.Namespace, settings: Settings) -> int:
         ev.write_review_sheet(sheet, queries, merged, records, RUBRIC)
         graded, total = ev.progress(merged)
         print(f"Pool: {stats['new_items']} new item(s) added to {judgments_path} ({total} total, {graded} graded).")
+        exhaustive = [q.id for q in queries if q.exhaustive]
+        if exhaustive:
+            print(f"Exhaustive queries (every eligible job is in the pool, so true recall can be computed): {', '.join(exhaustive)}")
+        print("Next: `jobintel label retrieval` (interactive, blinded, resumable).")
         print(f"Read the postings in {sheet} (local, git-ignored), then fill the 'grade' column (0/1/2).")
         print("The grades are yours to give; this tool never fills them in.")
         return 0
 
     report = ev.evaluate(searcher, queries, rows)
     print(ev.format_report(report, per_query=args.per_query))
+    baselines = eval_dir / "baselines"
+    if args.save_baseline or args.compare_baseline:
+        config = searcher.index.config
+        meta = {"model": config.model_name, "chunk_max_tokens": config.chunk_max_tokens, "chunk_overlap_tokens": config.chunk_overlap_tokens,
+                "k": report.k, "systems": list(report.summary), "queries_total": len(queries)}  # fmt: skip
+    if args.compare_baseline:
+        saved = baselines / f"retrieval_{args.compare_baseline}.json"
+        if not saved.exists():
+            raise SearchError(f"no saved baseline {saved}")
+        old = json.loads(saved.read_text(encoding="utf-8"))
+        print(f"\nChange versus baseline '{args.compare_baseline}' (saved with {old.get('meta', {}).get('model')}):")
+        print("\n".join("  " + line for line in ev.compare_to_baseline(report, old)))
+    if args.save_baseline:
+        baselines.mkdir(parents=True, exist_ok=True)
+        target = baselines / f"retrieval_{args.save_baseline}.json"
+        target.write_text(json.dumps(ev.baseline_payload(report, meta), indent=2, default=str), encoding="utf-8")
+        print(f"\nBaseline saved to {target} (numbers only; safe to commit).")
     if args.report_json:
         args.report_json.parent.mkdir(parents=True, exist_ok=True)
         args.report_json.write_text(json.dumps(report.to_dict(), indent=2, default=str), encoding="utf-8")

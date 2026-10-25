@@ -15,9 +15,17 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+screenshots = ["playwright>=1.40"]
 search = [
     "sentence-transformers>=3.0",
     "chromadb>=1.0",
+]
+app = [
+    "sentence-transformers>=3.0",
+    "chromadb>=1.0",
+    "gradio>=5.0",
+    "pypdf>=4.0",
+    "pydantic>=2.0",
 ]
 
 [project.scripts]

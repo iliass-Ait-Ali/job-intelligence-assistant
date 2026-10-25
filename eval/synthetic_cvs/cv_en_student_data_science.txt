@@ -1,0 +1,43 @@
+Jane Sample
+Data Science Master's student | Paris, France
+jane.sample@example.invalid | +00 000 000 000
+
+PROFILE
+Master's student in data science looking for a data scientist internship (6 months, starting in March). Interested in NLP and time series forecasting.
+
+EDUCATION
+Master in Data Science and Artificial Intelligence - Example Institute of Technology, Paris
+Sept 2024 - present
+Bachelor in Applied Mathematics - Example University
+2021 - 2024
+
+EXPERIENCE
+Data Science Intern - Example Retail SAS, Lyon
+June 2024 - August 2024
+- Built a demand forecasting model with Python, pandas and scikit-learn on three years of weekly sales data.
+- Automated reporting with SQL and Power BI dashboards used by the category managers.
+- Presented results to non-technical stakeholders.
+
+Teaching Assistant - Example University
+Sept 2023 - Jan 2024
+- Supported tutorials in statistics and probability for first-year students.
+
+PROJECTS
+Tweet sentiment classifier
+- Fine-tuned a Hugging Face transformer for French and English sentiment classification using PyTorch.
+- Tracked experiments with MLflow and served the model with FastAPI in a Docker container.
+
+Movie recommender
+- Implemented collaborative filtering in Python with NumPy and scikit-learn.
+
+SKILLS
+Programming: Python, SQL, R, Java
+Libraries: pandas, NumPy, scikit-learn, PyTorch, Hugging Face, Matplotlib
+Tools: Git, Docker, Power BI, Excel, Linux
+Concepts: statistics, machine learning, NLP, time series, data visualization
+
+LANGUAGES
+French (native), English (fluent, C1), Spanish (basic)
+
+INTERESTS
+Chess, trail running. (SYNTHETIC CV created for software tests - not a real person.)

@@ -15,7 +15,7 @@ Scores are never mixed between engines: ``score_kind`` says what ``score`` means
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -28,8 +28,10 @@ if TYPE_CHECKING:
 
 SEMANTIC = "semantic"
 BM25 = "bm25"
-ENGINES = (SEMANTIC, BM25)
+HYBRID = "hybrid"  # Reciprocal Rank Fusion of the semantic and BM25 rankings
+ENGINES = (SEMANTIC, BM25, HYBRID)
 INITIAL_CHUNKS = 50
+RRF_K = 60  # the constant from the original RRF paper (Cormack et al., 2009); not tuned on this data
 
 
 @dataclass(frozen=True)
@@ -37,7 +39,7 @@ class JobHit:
     rank: int
     job: IndexedJob
     score: float
-    score_kind: str  # "cosine_similarity" | "bm25"
+    score_kind: str  # "cosine_similarity" | "bm25" | "rrf"
     snippet: str
     distance: float | None = None  # semantic only: 1 - score
 
@@ -86,15 +88,23 @@ class Searcher:
             self._bm25 = Bm25Index({jid: job_document(rec) for jid, rec in self._records.items()})
         return self._bm25
 
+    def record(self, job_id: str) -> Mapping[str, Any] | None:
+        """The processed job record (description etc.) behind an indexed job, if the jobs file has it."""
+        return self._records.get(job_id)
+
     def eligible(self, flt: JobFilter) -> list[IndexedJob]:
         return flt.eligible(self.table.values())
 
     def search(
         self, query: str, *, engine: str = SEMANTIC, k: int = 10, flt: JobFilter | None = None,
-        max_per_company: int | None = None,
+        max_per_company: int | None = None, allowed_ids: Collection[str] | None = None,
     ) -> SearchResponse:  # fmt: skip
+        """`allowed_ids` further restricts the candidates BEFORE ranking (used for hard constraints)."""
         flt = flt or JobFilter()
         eligible = self.eligible(flt)
+        if allowed_ids is not None:
+            allowed = set(allowed_ids)
+            eligible = [j for j in eligible if j.job_id in allowed]
         response = SearchResponse(engine, query, [], len(eligible), len(self.table))
         if self.missing_records:
             response.notes.append(
@@ -107,6 +117,8 @@ class Searcher:
             self._semantic(response, query, k, eligible, max_per_company)
         elif engine == BM25:
             self._lexical(response, query, k, eligible, max_per_company)
+        elif engine == HYBRID:
+            self._hybrid(response, query, k, eligible, max_per_company)
         else:
             raise ValueError(f"unknown engine {engine!r}; choose from {ENGINES}")
         return response
@@ -134,6 +146,28 @@ class Searcher:
             response.hits.append(
                 JobHit(rank, job, hit.similarity, "cosine_similarity", best_snippet(hit.text, query), distance=hit.distance)
             )
+        if len(shown) < k:
+            response.notes.append(f"only {len(shown)} job(s) available for this query and filters")
+
+    def _hybrid(self, response, query, k, eligible, max_per_company) -> None:
+        """RRF over the FULL semantic and BM25 rankings of the eligible jobs (each engine uncapped)."""
+        n = len(eligible)
+        parts = []
+        for engine_fn in (self._semantic, self._lexical):
+            part = SearchResponse("", query, [], len(eligible), len(self.table))
+            engine_fn(part, query, n, eligible, None)
+            parts.append(part)
+        fused: dict[str, float] = {}
+        snippets: dict[str, str] = {}
+        for part in parts:
+            for hit in part.hits:  # BM25 lists only jobs sharing a term; the others get no lexical vote
+                fused[hit.job.job_id] = fused.get(hit.job.job_id, 0.0) + 1.0 / (RRF_K + hit.rank)
+                snippets.setdefault(hit.job.job_id, hit.snippet)
+        ranked = [(self.table[jid], score) for jid, score in sorted(fused.items(), key=lambda kv: (-kv[1], kv[0]))]
+        shown, hidden = apply_company_cap(ranked, max_per_company)
+        response.chunks_fetched, response.exhausted, response.hidden_by_cap = parts[0].chunks_fetched, True, hidden
+        for rank, (job, score) in enumerate(shown[:k], start=1):
+            response.hits.append(JobHit(rank, job, score, "rrf", snippets[job.job_id]))
         if len(shown) < k:
             response.notes.append(f"only {len(shown)} job(s) available for this query and filters")
 

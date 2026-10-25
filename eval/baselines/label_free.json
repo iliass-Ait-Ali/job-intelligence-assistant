@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "extraction.degree_level_accuracy": 1.0,
+    "extraction.experience_date_recall": 1.0,
+    "extraction.experience_title_start_f1": 0.926829,
+    "extraction.language_f1": 1.0,
+    "extraction.skill_f1": 1.0,
+    "extraction.skill_precision": 1.0,
+    "extraction.skill_recall": 1.0,
+    "extraction.target_role_f1": 1.0,
+    "extraction.worst_layout.degree_level_accuracy": 1.0,
+    "extraction.worst_layout.experience_date_recall": 1.0,
+    "extraction.worst_layout.language_f1": 1.0,
+    "grounding.deterministic_verifier_pass_rate": 1.0,
+    "grounding.provenance_rate": 1.0,
+    "grounding.verifier_stress_rejection_rate": 1.0,
+    "matching.cv_en_ml_engineer.eligible_recall_in_pool": 0.529801,
+    "matching.cv_en_student_data_science.eligible_recall_in_pool": 1.0,
+    "matching.cv_fr_data_engineer.eligible_recall_in_pool": 0.921875
+  },
+  "notes": [
+    "Phase 3 parser on the same corpus (informational): degree_level_accuracy=0.80, experience_date_recall=0.80, language_f1=0.89",
+    "Phase 3 retrieve-then-filter pool recall of eligible jobs (informational): cv_en_ml_engineer=0.50, cv_en_student_data_science=0.56, cv_fr_data_engineer=0.53"
+  ],
+  "about": "Label-free regression baseline (numbers only). Regenerate deliberately with `jobintel regress --update`."
+}

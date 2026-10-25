@@ -49,3 +49,43 @@ def arbeitnow_pages() -> list[dict]:
 @pytest.fixture
 def remotive_payload() -> dict:
     return load_fixture("remotive.json")
+
+
+# ---- Phase 3 fixtures (need the optional search/app dependencies) --------------------------------
+
+
+@pytest.fixture(scope="session")
+def match_searcher(tmp_path_factory):
+    pytest.importorskip("chromadb")
+    from match_data import match_jobs
+
+    from job_intel.search.document import ChunkingConfig
+    from job_intel.search.embedder import HashingEmbedder
+    from job_intel.search.index import IndexConfig, JobIndex
+    from job_intel.search.retrieve import Searcher
+
+    embedder = HashingEmbedder(max_seq_length=128)
+    records = match_jobs()
+    index = JobIndex.open_for_build(tmp_path_factory.mktemp("match_idx"), IndexConfig.build(embedder, ChunkingConfig(100, 20)))
+    index.sync(records, embedder)
+    return Searcher(index, embedder, {j["id"]: j for j in records})
+
+
+def _profile(name: str):
+    from datetime import date
+
+    from job_intel.match.cv_parser import parse_cv
+    from job_intel.match.cv_text import clean_cv_text
+
+    path = Path(__file__).parent.parent / "eval" / "synthetic_cvs" / name
+    return parse_cv(clean_cv_text(path.read_text(encoding="utf-8")), today=date(2026, 10, 23))
+
+
+@pytest.fixture(scope="session")
+def student_profile():
+    return _profile("cv_en_student_data_science.txt")
+
+
+@pytest.fixture(scope="session")
+def ml_profile():
+    return _profile("cv_en_ml_engineer.txt")
