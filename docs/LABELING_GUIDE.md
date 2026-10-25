@@ -10,7 +10,7 @@ to print metrics until the relevant items are graded. This guide says what to do
 | 1. Retrieval relevance | `jobintel label retrieval` | 167 query/job pairs over 10 queries | nDCG@10, P@5, MRR@10, recall for **BM25 vs semantic vs hybrid (RRF)** |
 | 2. CV-to-job fit | `jobintel label matching` | 84 candidate/job pairs over 3 synthetic CVs | ranking quality, role relevance, **eligibility correctness, incorrect exclusions, jobs the ranking never surfaces** |
 | 3. Skill claims | `jobintel label skills` | 32 claims | precision of "exact" vs "transferable" skill matching |
-| 4. Explanation audit | edit `data/eval/grounding_audit.csv` | about 95 claims (deterministic) | share of explanation claims actually supported by the evidence |
+| 4. Explanation audit | edit `data/eval/grounding_audit.csv` | 59 claims from the real `llama3.2:3b` run (re-running `match-eval grounding` without `--llm` regenerates the deterministic ones, about 95) | share of explanation claims actually supported by the evidence |
 
 Total: roughly 3 to 4 hours if you do everything. You do not have to: **a query / candidate is scored as soon as all of
 its pairs are graded**, so partial work still yields (smaller) measurements. A good first session (about 45 minutes):

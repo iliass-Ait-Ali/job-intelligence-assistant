@@ -21,7 +21,7 @@ annotation humaine en aveugle, métriques avec intervalles, tests de régression
 | "476 offline tests, including real ChromaDB and a mock Ollama server" | "semantic / hybrid search beats BM25" - **no human judgments exist yet** |
 | "hybrid = RRF of semantic and BM25; implemented and evaluable" | "the matcher is X% accurate" |
 | "a diagnostic showed my candidate pool missed 5 of 8 eligible jobs; filtering before retrieval fixed the coverage (56% -> 100% on one CV)" | "recommendations are good" (coverage is not quality) |
-| "the explanation verifier rejected 351/351 constructed corruptions" (say *constructed by me*) | "the system does not hallucinate" - no real LLM was ever run |
+| "the explanation verifier rejected 351/351 constructed corruptions" (say *constructed by me*) | "the system does not hallucinate" - one small real-model run (llama3.2:3b, 9 explanations): the verifier rejected 20 of 79 items (25%), and the accepted 59 are not yet human-audited |
 | "the parser is 1.00 on my synthetic layouts" (say *synthetic, written by me*) | "the parser works on real CVs" |
 | "everything runs locally; CVs never go to an external API" | "it is secure against prompt injection" - say *reduces the risk* |
 
@@ -108,7 +108,7 @@ counted as an exact match.
 **Why Chroma and not FAISS/pgvector?** Persistent, metadata filtering and a simple local API were enough for 1,074 chunks; at this size an exact
 scan would also be instant. I tested that Chroma's ranking matches brute-force cosine (ties aside).
 
-**What is your biggest weakness?** No measured retrieval or matching quality yet, and no real LLM run. The tooling is ready; the labels are the gap.
+**What is your biggest weakness?** No measured retrieval or matching quality yet, and the one real-LLM run (llama3.2:3b) is checked only by my automatic verifier, not by a human. The tooling is ready; the labels are the gap.
 
 **What would you do next with more time?** Grade the pools; run the Llama audit; compare e5-small/base and a weighted fusion on held-out queries;
 an LLM-based extractor evaluated against the synthetic corpus; near-duplicate collapsing for multi-city postings; real-CV pilot with consent.

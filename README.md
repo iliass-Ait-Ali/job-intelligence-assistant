@@ -143,7 +143,9 @@ text; probabilities, salaries and hiring guarantees are rejected. Failures fall 
 | Cited evidence snippets that occur verbatim in the CV / listing | - | 96/96 | checks the evidence trail, not truthfulness |
 | Deterministic explanation items passing the verifier | - | 95/95 | consistency check only |
 | Test suite | 408 | **476 passing** | offline; mock Ollama server, real ChromaDB |
-| Latency (CPU i7-13700HX, deterministic mode) | | parse 0.6 s; recommend 2.2 s warm (14.5 s incl. model load); explain 2.6 s | no real LLM timing exists yet |
+| **Real `llama3.2:3b` via Ollama**: items proposed by the model that pass the automatic verifier (3 synthetic CVs x top 3 jobs = 9 explanations) | - | **59/79 (75%)**; 8 of 9 explanations were model-written, 1 fell back to the deterministic template | one run, one small model, synthetic CVs; model output is not deterministic. Rejections: strength without both CV and listing citation 7, cited snippet off-topic 4+3, wrong evidence category 2, "X is missing" while the CV mentions X 4 |
+| Cited snippets of that real run that occur verbatim in the sources | - | 118/118 | evidence trail only |
+| Latency (CPU i7-13700HX, deterministic mode) | | parse 0.6 s; recommend 2.2 s warm (14.5 s incl. model load); explain 2.6 s | model timing not measured |
 
 ### Not yet measured - waiting for human judgments
 
@@ -152,7 +154,7 @@ text; probabilities, salaries and hiring guarantees are rejected. Failures fall 
 | Is hybrid better than BM25 or semantic? nDCG@10, P@5, MRR@10, recall | `jobintel label retrieval` -> `jobintel eval run` | 167 |
 | How good is the CV-to-job ranking? Are exclusions correct? What relevant jobs does it miss? Is role relevance right? | `jobintel label matching` -> `jobintel match-eval run` | 84 |
 | How often are "exact" / "transferable" skill claims right? | `jobintel label skills` -> `jobintel match-eval skills-score` | 32 |
-| Are explanation claims actually supported? (deterministic now; a real Llama run needs Ollama) | audit CSV -> `jobintel match-eval grounding-score` | about 95 |
+| Are explanation claims actually supported? (the audit sheet now holds the 59 verifier-passed items of the real Llama run) | `data/eval/grounding_audit.csv` -> `jobintel match-eval grounding-score` | 59 |
 
 **No claim that semantic or hybrid retrieval beats BM25 is made anywhere in this repository.**
 
@@ -170,7 +172,8 @@ text; probabilities, salaries and hiring guarantees are rejected. Failures fall 
 ### Remaining limitations
 
 * Retrieval and matching quality are unmeasured; one annotator and 10 queries / 3 synthetic candidates will give *descriptive* results only.
-* No real Llama run exists (Ollama is not installed; installing it needs explicit approval).
+* One real Llama run exists (`llama3.2:3b`, 9 explanations); it was checked only by the automatic verifier. Whether the 59 accepted claims are
+  truly supported awaits the human audit, so no hallucination rate is claimed.
 * The rule-based parser and the ~150-skill taxonomy are hand-made; real CV layouts will be harder than the synthetic ones.
 * 25% of listings lack a job type; near-duplicate postings cluster in rankings; the location gazetteer covers only the cities in the data.
 * Qualitative claims without named entities are weakly checked; the verifier is a safeguard, not proof of truth.
