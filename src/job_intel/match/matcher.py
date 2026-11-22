@@ -27,7 +27,7 @@ from job_intel.match.requirements import JobRequirements, extract_requirements
 from job_intel.match.taxonomy import closest_related
 from job_intel.relevance import ROLE_PATTERNS
 from job_intel.search.filters import IndexedJob
-from job_intel.search.locations import location_matches
+from job_intel.search.locations import location_matches, remote_allows
 from job_intel.search.retrieve import BM25, SEMANTIC, Searcher
 
 Status = Literal["satisfied", "violated", "unknown"]
@@ -128,6 +128,7 @@ class ConstraintResult:
 
 
 EARLY_CAREER = {"internship", "working_student"}
+REMOTE_BOARDS = {"himalayas", "remotive"}  # sources whose location means "where candidates may work from"
 
 
 def _job_type_constraint(job: IndexedJob, reqs: JobRequirements, prefs: Preferences) -> ConstraintResult | None:
@@ -158,6 +159,15 @@ def _location_constraint(job: IndexedJob, prefs: Preferences) -> ConstraintResul
     if not prefs.locations:
         return None
     hard = "location" in prefs.hard_constraints
+    if job.remote is True and job.source in REMOTE_BOARDS:
+        # On remote-only boards the location field lists where candidates may live, not an office.
+        verdicts = [remote_allows(job.location, wanted) for wanted in prefs.locations]
+        if any(v is True for v in verdicts):
+            return ConstraintResult("location", "satisfied", hard, f"Remote job open to candidates in: {job.location}.")
+        if verdicts and all(v is False for v in verdicts):
+            return ConstraintResult("location", "violated", hard,
+                                    f"Remote job restricted to {job.location}; you want {', '.join(prefs.locations)}.")  # fmt: skip
+        return ConstraintResult("location", "unknown", hard, f"Remote job; allowed locations: {job.location or 'not stated'}.")
     if job.remote is True:
         return ConstraintResult("location", "satisfied", hard, "The listing states remote work.")
     if not job.location:

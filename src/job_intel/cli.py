@@ -38,6 +38,10 @@ def build_parser() -> argparse.ArgumentParser:
     from job_intel.label_cli import add_label_commands
 
     add_label_commands(sub)
+
+    from job_intel.enrich.cli_enrich import add_enrich_command
+
+    add_enrich_command(sub)
     return parser
 
 
@@ -84,6 +88,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         for noisy in ("httpx", "httpx2", "httpcore", "urllib3", "huggingface_hub", "sentence_transformers", "chromadb"):
             logging.getLogger(noisy).setLevel(logging.WARNING)
     settings = Settings.from_env()
+    if args.command == "enrich":
+        from job_intel.enrich.cli_enrich import run as run_enrich
+
+        return run_enrich(args, settings)
     if args.command == "label":
         from job_intel.label_cli import run as run_label
 

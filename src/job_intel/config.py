@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 from job_intel import __version__
 
-DEFAULT_TTL_HOURS = {"arbeitnow": 1.0, "remotive": 6.0}
+DEFAULT_TTL_HOURS = {"arbeitnow": 1.0, "remotive": 6.0, "himalayas": 6.0}
 
 
 @dataclass(frozen=True)
@@ -22,10 +22,11 @@ class Settings:
     request_delay: float = 2.0
     max_retries: int = 2
     arbeitnow_max_pages: int = 10
+    himalayas_pages_per_query: int = 3
     ttl_hours: dict[str, float] = field(default_factory=lambda: dict(DEFAULT_TTL_HOURS))
     # Phase 2 (semantic search)
     embedding_model: str = "intfloat/multilingual-e5-base"
-    device: str = "cpu"
+    device: str = "auto"  # auto = CUDA when available, else CPU
     chunk_max_tokens: int = 300
     chunk_overlap_tokens: int = 40
     eval_dir: Path = Path("eval")
@@ -45,6 +46,14 @@ class Settings:
     @property
     def jobs_path(self) -> Path:
         return self.processed_dir / "jobs.jsonl"
+
+    @property
+    def enriched_path(self) -> Path:
+        return self.processed_dir / "jobs_enriched.jsonl"
+
+    @property
+    def db_path(self) -> Path:
+        return self.data_dir / "jobintel.db"
 
     @property
     def index_dir(self) -> Path:
@@ -69,8 +78,9 @@ class Settings:
             request_delay=float(os.getenv("JOBINTEL_REQUEST_DELAY_S", 2.0)),
             max_retries=int(os.getenv("JOBINTEL_MAX_RETRIES", 2)),
             arbeitnow_max_pages=int(os.getenv("JOBINTEL_ARBEITNOW_MAX_PAGES", 10)),
+            himalayas_pages_per_query=int(os.getenv("JOBINTEL_HIMALAYAS_PAGES", 3)),
             embedding_model=os.getenv("JOBINTEL_EMBEDDING_MODEL", "intfloat/multilingual-e5-base"),
-            device=os.getenv("JOBINTEL_DEVICE", "cpu"),
+            device=os.getenv("JOBINTEL_DEVICE", "auto"),
             chunk_max_tokens=int(os.getenv("JOBINTEL_CHUNK_MAX_TOKENS", 300)),
             chunk_overlap_tokens=int(os.getenv("JOBINTEL_CHUNK_OVERLAP_TOKENS", 40)),
             eval_dir=Path(os.getenv("JOBINTEL_EVAL_DIR", "eval")),
@@ -80,5 +90,6 @@ class Settings:
             ttl_hours={
                 "arbeitnow": float(os.getenv("JOBINTEL_ARBEITNOW_TTL_H", 1)),
                 "remotive": float(os.getenv("JOBINTEL_REMOTIVE_TTL_H", 6)),
+                "himalayas": float(os.getenv("JOBINTEL_HIMALAYAS_TTL_H", 6)),
             },
         )

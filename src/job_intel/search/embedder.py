@@ -158,7 +158,19 @@ class HashingEmbedder:
         return f"{self.name} (dim={self.dim}, TEST ONLY - no semantic knowledge)"
 
 
+def resolve_device(device: str) -> str:
+    """'auto' -> 'cuda' when a CUDA GPU is usable, else 'cpu'. Any explicit value is returned unchanged."""
+    if device != "auto":
+        return device
+    try:
+        import torch
+
+        return "cuda" if torch.cuda.is_available() else "cpu"
+    except Exception:  # pragma: no cover - torch missing or broken
+        return "cpu"
+
+
 def load_embedder(model_name: str, *, device: str = "cpu", batch_size: int = 16) -> Embedder:
     if model_name == HashingEmbedder.name:
         return HashingEmbedder()
-    return SentenceTransformerEmbedder(model_name, device=device, batch_size=batch_size)
+    return SentenceTransformerEmbedder(model_name, device=resolve_device(device), batch_size=batch_size)

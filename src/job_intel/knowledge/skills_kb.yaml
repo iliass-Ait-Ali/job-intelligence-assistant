@@ -1,0 +1,366 @@
+# Learning knowledge base for the skill-gap planner (Module 5).
+#
+# implies:        knowing THIS skill is evidence of partial knowledge of those (PostgreSQL => SQL,
+#                 but NOT SQL => PostgreSQL). Used for the "partially covered" status.
+# prerequisites:  learn these first (used to order the learning plan, topological sort).
+# resources:      official documentation or well-known free material only. Links were chosen to be
+#                 stable top-level pages; they are suggestions, not endorsements.
+# project:        a portfolio project that produces visible evidence of the skill.
+# interview:      typical technical questions to prepare.
+#
+# Skills absent from this file fall back to the defaults of their taxonomy category (bottom).
+
+skills:
+  Python:
+    implies: []
+    prerequisites: []
+    resources:
+      - {title: "The Python Tutorial (official)", url: "https://docs.python.org/3/tutorial/", type: docs}
+      - {title: "Kaggle Learn - Python", url: "https://www.kaggle.com/learn/python", type: course}
+    project: "Write a small CLI tool with type hints, logging, a config file and pytest tests; publish it on GitHub with CI."
+    interview:
+      - "Difference between a list, a tuple, a set and a dict; complexity of membership tests?"
+      - "What are generators and when do they save memory?"
+      - "Explain mutable default arguments and how to avoid the bug."
+  SQL:
+    implies: []
+    prerequisites: []
+    resources:
+      - {title: "PostgreSQL tutorial (official docs)", url: "https://www.postgresql.org/docs/current/tutorial.html", type: docs}
+      - {title: "Kaggle Learn - Intro to SQL", url: "https://www.kaggle.com/learn/intro-to-sql", type: course}
+      - {title: "Kaggle Learn - Advanced SQL", url: "https://www.kaggle.com/learn/advanced-sql", type: course}
+    project: "Model a small business dataset (orders, customers, products) and answer 10 analytical questions with window functions and CTEs."
+    interview:
+      - "INNER vs LEFT JOIN: what happens to rows without a match?"
+      - "Write a query returning the top-3 products per category (window functions)."
+      - "WHERE vs HAVING? What does an index speed up, and what does it slow down?"
+  PostgreSQL:
+    implies: [SQL]
+    prerequisites: [SQL]
+    resources:
+      - {title: "PostgreSQL documentation", url: "https://www.postgresql.org/docs/current/", type: docs}
+    project: "Deploy PostgreSQL in Docker, load a public dataset, add indexes and compare EXPLAIN ANALYZE plans."
+    interview:
+      - "What is MVCC and why does PostgreSQL need VACUUM?"
+      - "B-tree vs GIN index: which for full-text or JSONB search?"
+  MySQL: {implies: [SQL], prerequisites: [SQL]}
+  SQL Server: {implies: [SQL], prerequisites: [SQL]}
+  Oracle: {implies: [SQL], prerequisites: [SQL]}
+  SQLite: {implies: [SQL], prerequisites: [SQL]}
+  pandas:
+    implies: [Python, Data analysis]
+    prerequisites: [Python]
+    resources:
+      - {title: "pandas - Getting started", url: "https://pandas.pydata.org/docs/getting_started/index.html", type: docs}
+      - {title: "Kaggle Learn - Pandas", url: "https://www.kaggle.com/learn/pandas", type: course}
+    project: "Clean and analyse a messy public dataset (missing values, types, joins, groupby) in a documented notebook."
+    interview:
+      - "loc vs iloc? How do you avoid SettingWithCopy problems?"
+      - "How would you process a CSV that does not fit in memory?"
+  NumPy: {implies: [Python], prerequisites: [Python]}
+  Polars: {implies: [Python, Data analysis], prerequisites: [Python]}
+  scikit-learn:
+    implies: [Machine learning, Python]
+    prerequisites: [Python, Machine learning]
+    resources:
+      - {title: "scikit-learn User Guide", url: "https://scikit-learn.org/stable/user_guide.html", type: docs}
+      - {title: "Kaggle Learn - Intro to Machine Learning", url: "https://www.kaggle.com/learn/intro-to-machine-learning", type: course}
+    project: "Build a leakage-free Pipeline + ColumnTransformer with cross-validated hyper-parameter search and a model card."
+    interview:
+      - "Why must preprocessing be fitted inside cross-validation folds?"
+      - "Bias-variance trade-off: how do regularisation and model complexity move it?"
+  Machine learning:
+    implies: []
+    prerequisites: [Python, Statistics]
+    resources:
+      - {title: "Google Machine Learning Crash Course", url: "https://developers.google.com/machine-learning/crash-course", type: course}
+      - {title: "An Introduction to Statistical Learning (free book)", url: "https://www.statlearning.com/", type: book}
+    project: "End-to-end tabular project: baseline, feature engineering, model comparison with honest validation, error analysis."
+    interview:
+      - "Precision vs recall: which matters for fraud detection and why?"
+      - "How do you detect and handle data leakage?"
+      - "Explain gradient boosting in two minutes."
+  Deep learning:
+    implies: [Machine learning]
+    prerequisites: [Machine learning, Python]
+    resources:
+      - {title: "Dive into Deep Learning (free book)", url: "https://d2l.ai/", type: book}
+      - {title: "fast.ai - Practical Deep Learning", url: "https://course.fast.ai/", type: course}
+    project: "Train a small CNN or transformer from scratch, then fine-tune a pre-trained model; compare learning curves."
+    interview:
+      - "Why do residual connections help train deep networks?"
+      - "What do batch normalisation and dropout do?"
+  PyTorch:
+    implies: [Deep learning, Python]
+    prerequisites: [Python, Deep learning]
+    resources:
+      - {title: "PyTorch Tutorials (official)", url: "https://pytorch.org/tutorials/", type: docs}
+    project: "Implement a training loop with a custom Dataset, mixed precision and checkpointing; track runs with MLflow."
+    interview:
+      - "What does autograd record, and when do you call optimizer.zero_grad()?"
+      - "model.train() vs model.eval()?"
+  TensorFlow:
+    implies: [Deep learning, Python]
+    prerequisites: [Python, Deep learning]
+    resources:
+      - {title: "TensorFlow tutorials (official)", url: "https://www.tensorflow.org/tutorials", type: docs}
+    project: "Rebuild the same model in Keras/TensorFlow and serve it with a REST endpoint."
+    interview: ["Eager vs graph execution (tf.function)?"]
+  Keras: {implies: [Deep learning, Python], prerequisites: [Python, Deep learning]}
+  XGBoost: {implies: [Machine learning], prerequisites: [Machine learning]}
+  LightGBM: {implies: [Machine learning], prerequisites: [Machine learning]}
+  Statistics:
+    implies: []
+    prerequisites: []
+    resources:
+      - {title: "OpenIntro Statistics (free book)", url: "https://www.openintro.org/book/os/", type: book}
+      - {title: "Khan Academy - Statistics and probability", url: "https://www.khanacademy.org/math/statistics-probability", type: course}
+    project: "Design and analyse an A/B test on simulated data: power analysis, test choice, confidence intervals."
+    interview:
+      - "What does a p-value mean - and what does it NOT mean?"
+      - "Confidence interval vs credible interval?"
+  A/B testing:
+    implies: [Statistics]
+    prerequisites: [Statistics]
+    resources:
+      - {title: "Udacity - A/B Testing (free course)", url: "https://www.udacity.com/course/ab-testing--ud257", type: course}
+    project: "Simulate an experiment, compute the sample size for a target effect, and analyse it with and without CUPED."
+    interview: ["How do you choose the sample size of an experiment?", "What is the peeking problem?"]
+  Time series:
+    implies: [Statistics]
+    prerequisites: [Statistics, Python]
+    resources:
+      - {title: "Forecasting: Principles and Practice (free book)", url: "https://otexts.com/fpp3/", type: book}
+    project: "Forecast a public series with a seasonal-naive baseline, a gradient-boosting model and a rolling-origin backtest."
+    interview: ["Why is random k-fold CV wrong for time series?", "What is stationarity?"]
+  Forecasting: {implies: [Time series], prerequisites: [Time series]}
+  Data analysis:
+    implies: []
+    prerequisites: [SQL]
+    resources:
+      - {title: "Kaggle Learn - Data Visualization", url: "https://www.kaggle.com/learn/data-visualization", type: course}
+    project: "Answer a business question end to end: SQL extraction, pandas analysis, one-page recommendation."
+    interview: ["Walk me through how you would investigate a 10% drop in weekly sales."]
+  Data visualization:
+    implies: []
+    prerequisites: []
+    resources:
+      - {title: "Plotly Python documentation", url: "https://plotly.com/python/", type: docs}
+    project: "Rebuild a misleading chart from the news correctly and explain each design choice."
+    interview: ["When is a pie chart acceptable? How do you show uncertainty?"]
+  Power BI:
+    implies: [Data visualization]
+    prerequisites: [SQL]
+    resources:
+      - {title: "Microsoft Learn - Power BI", url: "https://learn.microsoft.com/en-us/training/powerplatform/power-bi", type: course}
+    project: "Build a star-schema data model and a 3-page Power BI report with DAX measures on a public dataset."
+    interview: ["Calculated column vs measure in DAX?", "What is a star schema and why does Power BI prefer it?"]
+  Tableau:
+    implies: [Data visualization]
+    prerequisites: [SQL]
+    resources:
+      - {title: "Tableau free training videos", url: "https://www.tableau.com/learn/training", type: course}
+    project: "Publish an interactive Tableau Public dashboard with parameters and LOD expressions."
+    interview: ["What are LOD expressions (FIXED / INCLUDE / EXCLUDE)?"]
+  Spark:
+    implies: [Data engineering]
+    prerequisites: [Python, SQL]
+    resources:
+      - {title: "Apache Spark documentation", url: "https://spark.apache.org/docs/latest/", type: docs}
+      - {title: "DataTalksClub - Data Engineering Zoomcamp (free)", url: "https://github.com/DataTalksClub/data-engineering-zoomcamp", type: course}
+    project: "Process a multi-GB public dataset with PySpark: partitioning, joins, aggregations; compare with pandas."
+    interview: ["Narrow vs wide transformations; what is a shuffle?", "Why is a broadcast join faster?"]
+  Databricks:
+    implies: [Spark]
+    prerequisites: [Spark]
+    resources:
+      - {title: "Databricks documentation", url: "https://docs.databricks.com/", type: docs}
+    project: "Build a medallion (bronze/silver/gold) pipeline with Delta Lake on Databricks Community Edition."
+    interview: ["What does Delta Lake add on top of Parquet?"]
+  Airflow:
+    implies: [ETL]
+    prerequisites: [Python]
+    resources:
+      - {title: "Apache Airflow documentation", url: "https://airflow.apache.org/docs/", type: docs}
+    project: "Schedule a daily ingestion DAG (extract -> validate -> load) with retries and alerting, in Docker."
+    interview: ["What makes a task idempotent and why does Airflow need it?"]
+  dbt:
+    implies: [Data modeling, SQL]
+    prerequisites: [SQL]
+    resources:
+      - {title: "dbt documentation", url: "https://docs.getdbt.com/docs/introduction", type: docs}
+    project: "Transform raw tables into tested staging/mart models with dbt, with documentation and data tests."
+    interview: ["What is an incremental model?", "How do dbt tests work?"]
+  ETL:
+    implies: []
+    prerequisites: [SQL, Python]
+    resources:
+      - {title: "DataTalksClub - Data Engineering Zoomcamp (free)", url: "https://github.com/DataTalksClub/data-engineering-zoomcamp", type: course}
+    project: "Build a reproducible pipeline from a public API to a warehouse table with schema validation and dedup."
+    interview: ["ETL vs ELT?", "How do you make a pipeline re-runnable without duplicates?"]
+  Data engineering: {implies: [], prerequisites: [SQL, Python]}
+  Data modeling: {implies: [], prerequisites: [SQL]}
+  Kafka:
+    implies: []
+    prerequisites: [Python]
+    resources:
+      - {title: "Apache Kafka documentation", url: "https://kafka.apache.org/documentation/", type: docs}
+    project: "Stream events through Kafka (Docker) into a consumer that aggregates them in real time."
+    interview: ["Partitions and consumer groups: how does Kafka scale reads?", "At-least-once vs exactly-once?"]
+  Snowflake: {implies: [SQL, Data warehouse], prerequisites: [SQL]}
+  BigQuery: {implies: [SQL, Data warehouse], prerequisites: [SQL]}
+  Docker:
+    implies: []
+    prerequisites: [Linux]
+    resources:
+      - {title: "Docker - Get started (official)", url: "https://docs.docker.com/get-started/", type: docs}
+    project: "Containerise an ML API with a multi-stage Dockerfile and docker compose (API + database)."
+    interview: ["Image vs container?", "Why order Dockerfile instructions from least to most frequently changing?"]
+  Kubernetes:
+    implies: [Docker]
+    prerequisites: [Docker]
+    resources:
+      - {title: "Kubernetes tutorials (official)", url: "https://kubernetes.io/docs/tutorials/", type: docs}
+    project: "Deploy the containerised API on a local cluster (kind/minikube) with a Deployment, Service and HPA."
+    interview: ["Pod vs Deployment vs Service?", "How do liveness and readiness probes differ?"]
+  Linux:
+    implies: []
+    prerequisites: []
+    resources:
+      - {title: "The Linux Command Line (free book)", url: "https://linuxcommand.org/tlcl.php", type: book}
+    project: "Automate a data-download-and-clean task with a Bash script and cron."
+    interview: ["How do you find which process listens on a port?"]
+  Git:
+    implies: []
+    prerequisites: []
+    resources:
+      - {title: "Pro Git (free book)", url: "https://git-scm.com/book/en/v2", type: book}
+    project: "Contribute a documented pull request (branch, commits, review) to an open-source project."
+    interview: ["merge vs rebase?", "How do you undo a commit that was already pushed?"]
+  CI/CD:
+    implies: [Git]
+    prerequisites: [Git]
+    resources:
+      - {title: "GitHub Actions documentation", url: "https://docs.github.com/en/actions", type: docs}
+    project: "Add a GitHub Actions workflow running lint, tests and a Docker build on every pull request."
+    interview: ["What should a CI pipeline for an ML project check?"]
+  AWS:
+    implies: []
+    prerequisites: [Linux]
+    resources:
+      - {title: "AWS Skill Builder (free tier courses)", url: "https://skillbuilder.aws/", type: course}
+    project: "Deploy a model behind an API on AWS (S3 + Lambda or ECS) with infrastructure as code."
+    interview: ["S3 vs EBS vs EFS?", "How would you serve a model on AWS cheaply?"]
+  Azure:
+    implies: []
+    prerequisites: [Linux]
+    resources:
+      - {title: "Microsoft Learn - Azure", url: "https://learn.microsoft.com/en-us/training/azure/", type: course}
+    project: "Train and deploy a model with Azure Machine Learning; log metrics and register the model."
+    interview: ["What does Azure ML add over training on a plain VM?"]
+  GCP:
+    implies: []
+    prerequisites: [Linux]
+    resources:
+      - {title: "Google Cloud Skills Boost", url: "https://www.cloudskillsboost.google/", type: course}
+    project: "Load data to BigQuery, train a BigQuery ML model and expose predictions through Cloud Run."
+    interview: ["When would you pick BigQuery over a relational database?"]
+  Terraform: {implies: [], prerequisites: [Linux]}
+  MLOps:
+    implies: []
+    prerequisites: [Machine learning, Docker, Git]
+    resources:
+      - {title: "DataTalksClub - MLOps Zoomcamp (free)", url: "https://github.com/DataTalksClub/mlops-zoomcamp", type: course}
+      - {title: "MLflow documentation", url: "https://mlflow.org/docs/latest/index.html", type: docs}
+    project: "Track experiments with MLflow, register a model, serve it with FastAPI in Docker and monitor drift."
+    interview: ["How do you detect data drift in production?", "What is a model registry for?"]
+  MLflow: {implies: [MLOps], prerequisites: [Machine learning]}
+  FastAPI:
+    implies: [REST API, Python]
+    prerequisites: [Python]
+    resources:
+      - {title: "FastAPI tutorial (official)", url: "https://fastapi.tiangolo.com/tutorial/", type: docs}
+    project: "Expose a model through a typed FastAPI service with Pydantic validation, tests and OpenAPI docs."
+    interview: ["Why is async useful for an inference API, and when is it not?"]
+  REST API: {implies: [], prerequisites: [Python]}
+  LLM:
+    implies: []
+    prerequisites: [Python, NLP]
+    resources:
+      - {title: "Hugging Face LLM Course", url: "https://huggingface.co/learn/llm-course", type: course}
+    project: "Build a small RAG assistant over your own documents with citations and an evaluation set."
+    interview: ["What limits an LLM's context window and how does RAG work around it?", "What is temperature?"]
+  RAG:
+    implies: [LLM, Embeddings]
+    prerequisites: [LLM, Embeddings]
+    resources:
+      - {title: "Hugging Face cookbook - RAG examples", url: "https://huggingface.co/learn/cookbook/index", type: course}
+    project: "RAG over a document collection with hybrid retrieval, re-ranking and a faithfulness evaluation."
+    interview: ["How do you evaluate a RAG system?", "Chunk size trade-offs?", "Why add a re-ranker?"]
+  Embeddings:
+    implies: []
+    prerequisites: [Python]
+    resources:
+      - {title: "Sentence Transformers documentation", url: "https://www.sbert.net/", type: docs}
+    project: "Semantic search over a corpus with FAISS; measure nDCG against BM25 on labelled queries."
+    interview: ["Bi-encoder vs cross-encoder?", "Why normalise embeddings before cosine similarity?"]
+  LangChain: {implies: [LLM], prerequisites: [LLM, Python]}
+  AI agents:
+    implies: [LLM]
+    prerequisites: [LLM]
+    resources:
+      - {title: "Hugging Face Agents Course", url: "https://huggingface.co/learn/agents-course", type: course}
+    project: "Build a tool-using agent with explicit tool schemas, a step limit and logged traces; evaluate success rate."
+    interview: ["How do you stop an agent from looping?", "What are the security risks of tool use (prompt injection)?"]
+  Fine-tuning: {implies: [LLM], prerequisites: [Deep learning, LLM]}
+  Prompt engineering: {implies: [LLM], prerequisites: [LLM]}
+  NLP:
+    implies: []
+    prerequisites: [Machine learning, Python]
+    resources:
+      - {title: "Speech and Language Processing (Jurafsky & Martin, free draft)", url: "https://web.stanford.edu/~jurafsky/slp3/", type: book}
+      - {title: "Hugging Face LLM Course", url: "https://huggingface.co/learn/llm-course", type: course}
+    project: "Text classification: TF-IDF + logistic regression baseline vs fine-tuned transformer, with error analysis."
+    interview: ["TF-IDF vs embeddings?", "How does attention work?"]
+  Hugging Face: {implies: [NLP], prerequisites: [Python, Deep learning]}
+  Computer vision:
+    implies: []
+    prerequisites: [Deep learning]
+    resources:
+      - {title: "Stanford CS231n notes", url: "https://cs231n.github.io/", type: course}
+    project: "Fine-tune an image classifier and analyse failure cases with Grad-CAM."
+    interview: ["Why do CNNs use weight sharing?"]
+  Java: {implies: [], prerequisites: []}
+  Scala: {implies: [], prerequisites: []}
+  Go: {implies: [], prerequisites: []}
+  TypeScript: {implies: [JavaScript], prerequisites: [JavaScript]}
+
+# Defaults by taxonomy category, used when a skill has no entry above.
+categories:
+  programming_language:
+    project: "Re-implement a small tool you already know in this language, with tests."
+    interview: ["What problems is this language particularly good at, and why?"]
+  framework_library:
+    project: "Use the library in a small, tested project and document the design choices."
+    interview: ["What problem does this library solve, and what are its alternatives?"]
+  data_platform:
+    project: "Build a small pipeline on the platform with a public dataset and document costs/limits."
+    interview: ["How does this platform scale and what does it cost?"]
+  database:
+    project: "Model a dataset in this database, index it, and benchmark three typical queries."
+    interview: ["When would you choose this database over a relational one?"]
+  bi_tool:
+    project: "Build a small dashboard on a public dataset with a clear data model."
+    interview: ["How do you keep a dashboard's numbers consistent with the source?"]
+  cloud_devops:
+    project: "Deploy a small service with this tool and describe it as code."
+    interview: ["What failure modes does this tool protect you from?"]
+  genai:
+    project: "Build a small, evaluated prototype (with a test set) using this technique."
+    interview: ["How do you evaluate it and what are its failure modes?"]
+  concept:
+    project: "Write a notebook that explains and applies the concept on real data."
+    interview: ["Explain the concept to a non-specialist, then give its main pitfall."]
+  tool:
+    project: "Use the tool in a small project and write down what you learned."
+    interview: ["How have you used it, and what would you do differently?"]

@@ -228,6 +228,12 @@ class JobIndex:
     def count_chunks(self) -> int:
         return int(self._col.count())
 
+    def chunks_of(self, job_id: str) -> list[str]:
+        """The job's chunk texts in document order."""
+        page = self._col.get(where={"job_id": job_id}, include=["documents", "metadatas"])
+        pairs = sorted(zip(page["metadatas"], page["documents"]), key=lambda md: int(md[0]["chunk_index"]))
+        return [doc or "" for _, doc in pairs]
+
     def query(self, vector: Sequence[float], n_results: int, job_ids: Iterable[str] | None = None) -> list[ChunkHit]:
         """Nearest chunks, optionally restricted (before the vector search) to the given jobs."""
         where = None

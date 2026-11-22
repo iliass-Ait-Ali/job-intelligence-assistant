@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from job_intel.config import Settings
-from job_intel.connectors import ArbeitnowConnector, Connector, RemotiveConnector
+from job_intel.connectors import ArbeitnowConnector, Connector, HimalayasConnector, RemotiveConnector
 from job_intel.dedup import deduplicate
 from job_intel.http import FetchError, HttpClient
 from job_intel.models import InvalidRecordError, Job
@@ -19,11 +19,13 @@ from job_intel.storage import RawStore, utcnow, write_csv, write_json, write_jso
 
 log = logging.getLogger(__name__)
 
-SOURCE_NAMES = ("arbeitnow", "remotive")
+SOURCE_NAMES = ("arbeitnow", "remotive", "himalayas")
 ATTRIBUTION = {
     "arbeitnow": "Jobs courtesy of Arbeitnow (https://www.arbeitnow.com). Link back to the listing URL.",
     "remotive": "Jobs courtesy of Remotive (https://remotive.com). Link back to the listing URL; "
     "do not resubmit to third-party job aggregators.",
+    "himalayas": "Jobs courtesy of Himalayas (https://himalayas.app). Apply through the listing's applicationLink; "
+    "do not pass the jobs on to other job boards or aggregators.",
 }
 
 
@@ -78,6 +80,7 @@ def build_connectors(settings: Settings, names: tuple[str, ...] | list[str]) -> 
     factories = {
         "arbeitnow": lambda: ArbeitnowConnector(client(), max_pages=settings.arbeitnow_max_pages),
         "remotive": lambda: RemotiveConnector(client()),
+        "himalayas": lambda: HimalayasConnector(client(), pages_per_query=settings.himalayas_pages_per_query),
     }
     unknown = set(names) - set(factories)
     if unknown:

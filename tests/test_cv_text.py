@@ -85,9 +85,13 @@ def test_text_and_markdown_files(tmp_path):
 
 def test_unsupported_missing_and_empty_files(tmp_path):
     docx = tmp_path / "cv.docx"
-    docx.write_bytes(b"PK")
-    with pytest.raises(CVExtractionError, match="Unsupported"):
+    docx.write_bytes(b"PK")  # not a real Word document
+    with pytest.raises(CVExtractionError, match="could not be read"):
         from_file(docx)
+    odt = tmp_path / "cv.odt"
+    odt.write_bytes(b"PK")
+    with pytest.raises(CVExtractionError, match="Unsupported"):
+        from_file(odt)
     with pytest.raises(CVExtractionError, match="not be found"):
         from_file(tmp_path / "nope.pdf")
     empty = tmp_path / "empty.txt"

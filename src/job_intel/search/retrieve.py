@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 from job_intel.search.filters import IndexedJob, JobFilter
 from job_intel.search.index import JobIndex
+from job_intel.search.keyword import KeywordIndex
 from job_intel.search.lexical import Bm25Index, best_snippet, job_document
 
 if TYPE_CHECKING:
@@ -29,7 +30,11 @@ if TYPE_CHECKING:
 SEMANTIC = "semantic"
 BM25 = "bm25"
 HYBRID = "hybrid"  # Reciprocal Rank Fusion of the semantic and BM25 rankings
+KEYWORD = "keyword"  # coordinate-matching baseline (distinct query terms present)
+RERANK = "hybrid_rerank"  # hybrid top-N re-scored by a cross-encoder
 ENGINES = (SEMANTIC, BM25, HYBRID)
+ALL_ENGINES = (KEYWORD, BM25, SEMANTIC, HYBRID, RERANK)
+RERANK_DEPTH = 30
 INITIAL_CHUNKS = 50
 RRF_K = 60  # the constant from the original RRF paper (Cormack et al., 2009); not tuned on this data
 
@@ -74,13 +79,36 @@ def apply_company_cap(
 
 
 class Searcher:
-    def __init__(self, index: JobIndex, embedder: Embedder, jobs: Mapping[str, Mapping[str, Any]]) -> None:
-        """`jobs` maps job id -> processed record; it feeds BM25 and lexical snippets."""
+    def __init__(self, index: JobIndex, embedder: Embedder, jobs: Mapping[str, Mapping[str, Any]], *,
+                 reranker: Any = None, rerank_depth: int = RERANK_DEPTH) -> None:  # fmt: skip
+        """`jobs` maps job id -> processed record; it feeds BM25 and lexical snippets.
+
+        `index` is a ``JobIndex`` (Chroma HNSW) or a ``FaissChunkIndex`` (exact): same contract.
+        `reranker` (a ``CrossEncoderReranker`` or a zero-argument factory returning one) enables
+        the ``hybrid_rerank`` engine; it is loaded lazily on first use."""
         self.index, self.embedder = index, embedder
         self.table = index.job_table()
         self._records = {job_id: jobs[job_id] for job_id in self.table if job_id in jobs}
         self.missing_records = len(self.table) - len(self._records)
         self._bm25: Bm25Index | None = None
+        self._keyword: KeywordIndex | None = None
+        self._reranker = reranker
+        self.rerank_depth = rerank_depth
+
+    @property
+    def keyword(self) -> KeywordIndex:
+        if self._keyword is None:
+            self._keyword = KeywordIndex({jid: job_document(rec) for jid, rec in self._records.items()},
+                                         {jid: rec.get("title") or "" for jid, rec in self._records.items()})  # fmt: skip
+        return self._keyword
+
+    @property
+    def reranker(self) -> Any:
+        if callable(self._reranker) and not hasattr(self._reranker, "score"):
+            self._reranker = self._reranker()  # lazy factory
+        if self._reranker is None:
+            raise ValueError("the hybrid_rerank engine needs a cross-encoder (Searcher(reranker=...))")
+        return self._reranker
 
     @property
     def bm25(self) -> Bm25Index:
@@ -119,8 +147,12 @@ class Searcher:
             self._lexical(response, query, k, eligible, max_per_company)
         elif engine == HYBRID:
             self._hybrid(response, query, k, eligible, max_per_company)
+        elif engine == KEYWORD:
+            self._keyword_search(response, query, k, eligible, max_per_company)
+        elif engine == RERANK:
+            self._rerank(response, query, k, eligible, max_per_company)
         else:
-            raise ValueError(f"unknown engine {engine!r}; choose from {ENGINES}")
+            raise ValueError(f"unknown engine {engine!r}; choose from {ALL_ENGINES}")
         return response
 
     def _semantic(self, response, query, k, eligible, max_per_company) -> None:
@@ -181,3 +213,35 @@ class Searcher:
             response.hits.append(JobHit(rank, job, score, "bm25", snippet.replace("\n", " ")))
         if len(shown) < k:
             response.notes.append(f"only {len(shown)} job(s) share a term with the query")
+
+    def _keyword_search(self, response, query, k, eligible, max_per_company) -> None:
+        ranked_ids = self.keyword.search(query, k=len(self.table), eligible=[j.job_id for j in eligible])
+        ranked = [(self.table[jid], score) for jid, score in ranked_ids]
+        shown, hidden = apply_company_cap(ranked, max_per_company)
+        response.hidden_by_cap, response.exhausted = hidden, True
+        for rank, (job, score) in enumerate(shown[:k], start=1):
+            snippet = best_snippet(self._records[job.job_id].get("description"), query)
+            response.hits.append(JobHit(rank, job, float(int(score)), "keyword_overlap", snippet.replace("\n", " ")))
+        if len(shown) < k:
+            response.notes.append(f"only {len(shown)} job(s) contain a query term")
+
+    def _rerank(self, response, query, k, eligible, max_per_company) -> None:
+        """Hybrid RRF retrieves `rerank_depth` candidates; the cross-encoder re-orders them.
+        Jobs below the depth keep their hybrid order after the re-ranked block."""
+        from job_intel.search.rerank import rerank_jobs
+
+        first = SearchResponse("", query, [], len(eligible), len(self.table))
+        self._hybrid(first, query, max(k, self.rerank_depth), eligible, None)
+        head = first.hits[: self.rerank_depth]
+        passages = {h.job.job_id: self.index.chunks_of(h.job.job_id) for h in head}
+        reranked = rerank_jobs(self.reranker, query, passages)
+        order = [(self.table[r.job_id], r) for r in reranked]
+        tail = [(h.job, None) for h in first.hits[self.rerank_depth :]]
+        shown, hidden = apply_company_cap(order + tail, max_per_company)
+        response.chunks_fetched, response.exhausted, response.hidden_by_cap = first.chunks_fetched, True, hidden
+        snippets = {h.job.job_id: h.snippet for h in first.hits}
+        for rank, (job, r) in enumerate(shown[:k], start=1):
+            snippet = best_snippet(r.best_passage, query) if r is not None and r.best_passage else snippets.get(job.job_id, "")
+            response.hits.append(JobHit(rank, job, r.score if r is not None else float("nan"), "cross_encoder_logit", snippet))
+        if len(shown) < k:
+            response.notes.append(f"only {len(shown)} job(s) available for this query and filters")

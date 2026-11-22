@@ -1,4 +1,4 @@
-"""Get clean text out of an uploaded CV (PDF or text) or pasted text.
+"""Get clean text out of an uploaded CV (PDF, DOCX or text) or pasted text.
 
 Everything stays on the local machine. Failures raise ``CVExtractionError`` with a message meant
 for the end user; softer problems (scanned pages, very short text) become warnings.
@@ -19,6 +19,7 @@ MAX_CHARS = 60_000
 MIN_USEFUL_CHARS = 200
 SCANNED_CHARS_PER_PAGE = 120
 TEXT_SUFFIXES = {".txt", ".md", ".text"}
+CV_SUFFIXES = {".pdf", ".docx", *TEXT_SUFFIXES}
 
 
 class CVExtractionError(ValueError):
@@ -28,7 +29,7 @@ class CVExtractionError(ValueError):
 @dataclass
 class ExtractedCV:
     text: str
-    source: str  # "pdf" | "text" | "pasted"
+    source: str  # "pdf" | "docx" | "text" | "pasted"
     pages: int | None = None
     warnings: list[str] = field(default_factory=list)
 
@@ -133,6 +134,8 @@ def from_file(path: str | Path) -> ExtractedCV:
     data = path.read_bytes() if path.stat().st_size <= MAX_BYTES + 1 else b""
     if suffix == ".pdf":
         return from_pdf_bytes(data)
+    if suffix == ".docx":
+        return from_docx_bytes(data)
     if suffix in TEXT_SUFFIXES:
         if not data:
             raise CVExtractionError("The file is empty or too large.")
@@ -142,4 +145,49 @@ def from_file(path: str | Path) -> ExtractedCV:
             except UnicodeDecodeError:
                 continue
         raise CVExtractionError("The text file could not be decoded (use UTF-8).")
-    raise CVExtractionError(f"Unsupported file type {suffix or '(none)'!r}. Upload a PDF or a .txt file, or paste the text.")
+    raise CVExtractionError(f"Unsupported file type {suffix or '(none)'!r}. Upload a PDF, DOCX or .txt file, or paste the text.")
+
+
+def from_docx_bytes(data: bytes) -> ExtractedCV:
+    """Paragraphs and table cells of a Word document, in document order (python-docx)."""
+    if not data:
+        raise CVExtractionError("The file is empty or too large.")
+    try:
+        import io
+
+        import docx  # python-docx
+    except ImportError as exc:  # pragma: no cover - depends on the environment
+        raise CVExtractionError("DOCX support needs python-docx: pip install python-docx") from exc
+    try:
+        document = docx.Document(io.BytesIO(data))
+    except Exception as exc:
+        raise CVExtractionError("The DOCX file could not be read (is it a valid Word document?).") from exc
+    lines: list[str] = []
+    body = document.element.body
+    for child in body.iterchildren():
+        tag = child.tag.rsplit("}", 1)[-1]
+        if tag == "p":
+            text = "".join(node.text or "" for node in child.iter() if node.tag.endswith("}t"))
+            style = child.find(".//{*}pStyle")
+            is_list = child.find(".//{*}numPr") is not None or (style is not None and "List" in (style.get(
+                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val") or ""))
+            if text.strip():
+                lines.append(("- " if is_list else "") + text)
+        elif tag == "tbl":
+            for row in child.iter():
+                if row.tag.endswith("}tr"):
+                    cells = []
+                    for cell in row:
+                        if cell.tag.endswith("}tc"):
+                            cell_text = " ".join("".join(n.text or "" for n in p.iter() if n.tag.endswith("}t"))
+                                                 for p in cell if p.tag.endswith("}p"))
+                            if cell_text.strip():
+                                cells.append(cell_text.strip())
+                    if len(cells) == 2 and len(cells[0]) <= 30:  # "Languages | French, English" -> "Languages: ..."
+                        lines.append(f"{cells[0]}: {cells[1]}")
+                    elif cells:
+                        lines.append(" | ".join(cells))
+    warnings: list[str] = []
+    if not lines:
+        raise CVExtractionError("The DOCX file contains no text.")
+    return _finish("\n".join(lines), "docx", None, warnings)
