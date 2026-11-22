@@ -36,9 +36,11 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "contract": 0.03,
 }  # fmt: skip
 # Cosine similarities of multilingual-e5-base between a CV query and a listing chunk live in a narrow
-# band; these bounds map it to [0, 1]. They are the 5th / 95th percentiles measured on this corpus
-# (see docs/learn/04_matching_scoring.md), not magic numbers.
-SEMANTIC_BOUNDS = (0.78, 0.89)
+# band; these bounds map it to [0, 1]. They are the 5th / 95th percentiles (0.807 / 0.881) of the best
+# similarity of 328 jobs retrieved for the three synthetic CVs on the 2026-11-22 corpus, rounded -
+# measured, not magic numbers (docs/learn/04_matching_scoring.md).
+SEMANTIC_BOUNDS = (0.81, 0.88)
+NEUTRAL = 0.5  # value assumed for an unknown component in the RANKING score only
 TRANSFERABLE_CREDIT = 0.5  # a related skill counts half: evidence of a neighbour, not of the skill
 
 
@@ -56,9 +58,13 @@ class Component:
 
 @dataclass
 class CompatibilityScore:
-    score: float  # 0-100
+    score: float  # 0-100, over the observable components only
     coverage: float  # 0-1, share of the weight that was observable
     components: list[Component] = field(default_factory=list)
+    # Same weights, unknown components counted as NEUTRAL (0.5). Equivalent to shrinking the observed
+    # score toward 50 in proportion to the missing weight: ranking = coverage*score + (1-coverage)*50.
+    # Used to SORT, so a 95 built on half the evidence does not outrank an 85 built on all of it.
+    ranking_score: float = 0.0
 
     @property
     def band(self) -> str:
@@ -172,4 +178,13 @@ def score_match(match, profile: CandidateProfile, weights: Mapping[str, float] |
     total = sum(c.weight for c in comps) or 1.0
     known_w = sum(c.weight for c in comps if c.known)
     score = 100.0 * sum(c.weight * float(c.value) for c in comps if c.known) / known_w if known_w else 0.0
-    return CompatibilityScore(round(score, 1), round(known_w / total, 2), comps)
+    coverage = known_w / total
+    ranking = coverage * score + (1.0 - coverage) * 100.0 * NEUTRAL
+    return CompatibilityScore(round(score, 1), round(coverage, 2), comps, round(ranking, 1))
+
+
+def rank_by_score(matches, profile: CandidateProfile, weights: Mapping[str, float] | None = None):
+    """[(match, score)] sorted by the ranking score (ties: observed score, then job id)."""
+    scored = [(m, score_match(m, profile, weights)) for m in matches]
+    scored.sort(key=lambda ms: (-ms[1].ranking_score, -ms[1].score, ms[0].job.job_id))
+    return scored

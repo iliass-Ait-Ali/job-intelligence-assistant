@@ -264,8 +264,9 @@ def test_retrieval_card_is_blinded_and_helpful(searcher, tmp_path):
 
 
 def test_label_cli_end_to_end_with_typed_answers(tmp_path, monkeypatch, capsys):
-    from job_intel import cli
     from search_data import write_jobs
+
+    from job_intel import cli
 
     data = tmp_path / "data"
     write_jobs(data / "processed" / "jobs.jsonl")
@@ -284,8 +285,9 @@ def test_label_cli_end_to_end_with_typed_answers(tmp_path, monkeypatch, capsys):
 
 
 def test_label_cli_explains_what_to_do_when_there_is_no_pool(tmp_path, monkeypatch, capsys):
-    from job_intel import cli
     from search_data import write_jobs
+
+    from job_intel import cli
 
     write_jobs(tmp_path / "data" / "processed" / "jobs.jsonl")
     monkeypatch.setenv("JOBINTEL_EVAL_DIR", str(tmp_path / "eval"))

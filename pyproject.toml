@@ -4,29 +4,36 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "job-intel"
-version = "0.1.0"
-description = "Phase 1 (data collection) of the AI-Powered Job & Internship Intelligence Assistant"
+version = "1.0.0"
+description = "AI-powered job & internship intelligence: hybrid search, explainable CV-job matching, skill-gap planning, market analytics and a grounded RAG assistant"
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
 dependencies = [
     "requests>=2.31",
     "python-dotenv>=1.0",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
-screenshots = ["playwright>=1.40"]
-search = [
-    "sentence-transformers>=3.0",
-    "chromadb>=1.0",
-]
+# retrieval stack: embeddings, persistent store, exact vector search, cross-encoder
+search = ["sentence-transformers>=3.0", "chromadb>=1.0", "faiss-cpu>=1.8"]
+# CV files, web UI, REST API
 app = [
-    "sentence-transformers>=3.0",
-    "chromadb>=1.0",
-    "gradio>=5.0",
+    "job-intel[search]",
     "pypdf>=4.0",
-    "pydantic>=2.0",
+    "python-docx>=1.1",
+    "streamlit>=1.40",
+    "plotly>=5.20",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "python-multipart>=0.0.9",
 ]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.6"]
+screenshots = ["playwright>=1.40"]
 
 [project.scripts]
 jobintel = "job_intel.cli:main"
@@ -34,6 +41,22 @@ jobintel = "job_intel.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+job_intel = ["knowledge/*.yaml", "ui/.streamlit/*.toml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning", "ignore:.*ScriptRunContext.*"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "B008", "B905", "E731", "B023", "E741"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

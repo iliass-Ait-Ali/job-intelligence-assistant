@@ -10,7 +10,7 @@ from pathlib import Path
 
 from job_intel.config import Settings
 
-MATCH_COMMANDS = {"profile", "match", "llm-status", "app", "match-eval", "regress"}
+MATCH_COMMANDS = {"profile", "match", "llm-status", "match-eval", "regress"}
 RUBRIC = (
     "**Grades.** 2 = strong fit for this candidate (role, skills and constraints all fit); 1 = partial fit (related but with an "
     "important gap, or a constraint unclear); 0 = not a fit. Judge the job against the CV only, not against any system's ranking."
@@ -42,11 +42,6 @@ def add_match_commands(sub: argparse._SubParsersAction) -> None:
 
     llm = sub.add_parser("llm-status", help="check the local Ollama server and model")
     llm.add_argument("--model")
-
-    app = sub.add_parser("app", help="launch the local Gradio application")
-    common(app)
-    app.add_argument("--port", type=int, default=7860)
-    app.add_argument("--open", action="store_true", help="open the browser")
 
     ev = sub.add_parser("match-eval", help="human-judged evaluation of CV matching, label-free diagnostics, explanation grounding")
     esub = ev.add_subparsers(dest="meval_command", required=True)
@@ -173,14 +168,6 @@ def _run(args: argparse.Namespace, settings: Settings) -> int:
                 print(f"  - {g.requirement} [{', '.join(g.job_refs)}]")
             for p in exp.preparation:
                 print(f"  > {p.suggestion} [{', '.join(p.cv_refs + p.job_refs)}]")
-        return 0
-
-    if args.command == "app":
-        from job_intel.app.controller import AppContext
-        from job_intel.app.gradio_app import launch
-
-        settings = dataclasses.replace(settings, data_dir=args.data_dir or settings.data_dir)
-        launch(AppContext(settings), port=args.port, inbrowser=args.open)
         return 0
 
     if args.command == "regress":

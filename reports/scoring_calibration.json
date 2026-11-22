@@ -1,0 +1,91 @@
+{
+  "label_note": "Grades: assistant-proposed (written by the AI that built the system, blind to its rankings), NOT human-verified; only 3 synthetic candidates, so fitted weights can easily over-fit - which is exactly what the leave-one-candidate-out protocol checks.",
+  "candidates": [
+    "cv_en_ml_engineer",
+    "cv_en_student_data_science",
+    "cv_fr_data_engineer"
+  ],
+  "labelled_eligible_pairs": {
+    "cv_en_ml_engineer": 22,
+    "cv_en_student_data_science": 18,
+    "cv_fr_data_engineer": 23
+  },
+  "methods": {
+    "retrieval order (RRF)": {
+      "mean_ndcg@10": 0.6653594584908761,
+      "ndcg_cv_en_ml_engineer": 0.4163119467353961,
+      "ndcg_cv_en_student_data_science": 0.6764117082342245,
+      "ndcg_cv_fr_data_engineer": 0.9033547205030075
+    },
+    "rule-based evidence level": {
+      "mean_ndcg@10": 0.6353493566687484,
+      "ndcg_cv_en_ml_engineer": 0.5609729705993538,
+      "ndcg_cv_en_student_data_science": 0.7967174504651446,
+      "ndcg_cv_fr_data_engineer": 0.5483576489417468
+    },
+    "observed score (default weights)": {
+      "mean_ndcg@10": 0.6461342235783204,
+      "ndcg_cv_en_ml_engineer": 0.5639034800605678,
+      "ndcg_cv_en_student_data_science": 0.8292983727449793,
+      "ndcg_cv_fr_data_engineer": 0.5452008179294141
+    },
+    "ranking score (default weights)": {
+      "mean_ndcg@10": 0.6607699987506956,
+      "ndcg_cv_en_ml_engineer": 0.5723159895694354,
+      "ndcg_cv_en_student_data_science": 0.8039035107092559,
+      "ndcg_cv_fr_data_engineer": 0.6060904959733957
+    },
+    "ranking score (weights fitted, leave-one-CV-out)": {
+      "mean_ndcg@10": 0.6370296973899048,
+      "ndcg_cv_en_ml_engineer": 0.5902534628234708,
+      "ndcg_cv_en_student_data_science": 0.8410053976467559,
+      "ndcg_cv_fr_data_engineer": 0.47983023169948763
+    }
+  },
+  "fitted_in_sample_mean_ndcg@10": 0.7890161128975728,
+  "weights_chosen_per_fold": {
+    "cv_en_ml_engineer": {
+      "required_skills": 0.167,
+      "semantic": 0.265,
+      "role": 0.197,
+      "experience": 0.031,
+      "preferred_skills": 0.017,
+      "education": 0.009,
+      "languages": 0.037,
+      "location": 0.206,
+      "contract": 0.069
+    },
+    "cv_en_student_data_science": {
+      "required_skills": 0.182,
+      "semantic": 0.345,
+      "role": 0.046,
+      "experience": 0.023,
+      "preferred_skills": 0.13,
+      "education": 0.063,
+      "languages": 0.003,
+      "location": 0.008,
+      "contract": 0.2
+    },
+    "cv_fr_data_engineer": {
+      "required_skills": 0.173,
+      "semantic": 0.07,
+      "role": 0.093,
+      "experience": 0.003,
+      "preferred_skills": 0.182,
+      "education": 0.005,
+      "languages": 0.154,
+      "location": 0.118,
+      "contract": 0.202
+    }
+  },
+  "eligibility_agreement": {
+    "excluded_and_labelled_ineligible": 21,
+    "kept_but_labelled_ineligible": 8,
+    "excluded_but_labelled_eligible": 0,
+    "kept_and_labelled_eligible": 40,
+    "label_says_unknown": 15,
+    "precision_of_exclusions": 1.0,
+    "recall_of_exclusions": 0.7241379310344828
+  },
+  "conclusion": "Fitted weights reach nDCG@10 0.789 in-sample but 0.637 out-of-sample vs 0.661 for the documented default weights; the fit does not generalise, so the default weights are kept."
+}

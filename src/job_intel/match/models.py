@@ -84,6 +84,10 @@ class CandidateProfile(Strict):
     experiences: list[Experience] = Field(default_factory=list)
     projects: list[Project] = Field(default_factory=list)
     spoken_languages: list[SpokenLanguage] = Field(default_factory=list)
+    certifications: list[str] = Field(default_factory=list)  # lines of a Certifications section, verbatim
+    # Sector of each dated experience, estimated from its own lines (enrich/sector.py); empty when unclear.
+    experience_sectors: list[str] = Field(default_factory=list)
+    soft_skills: dict[str, str] = Field(default_factory=dict)  # claimed soft skill -> CV line (never scored)
     warnings: list[str] = Field(default_factory=list)
 
     @field_validator("target_roles")

@@ -13,7 +13,6 @@ from search_data import write_jobs  # noqa: E402
 
 from job_intel import cli  # noqa: E402
 from job_intel.match import evaluate as me  # noqa: E402
-from job_intel.match.matcher import match_candidate  # noqa: E402
 from job_intel.rag.ollama import LLMUnavailable  # noqa: E402
 from job_intel.search import evaluate as se  # noqa: E402
 from job_intel.search.errors import EvalError  # noqa: E402

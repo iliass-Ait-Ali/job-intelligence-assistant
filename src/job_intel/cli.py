@@ -42,6 +42,10 @@ def build_parser() -> argparse.ArgumentParser:
     from job_intel.enrich.cli_enrich import add_enrich_command
 
     add_enrich_command(sub)
+
+    from job_intel.cli_platform import add_platform_commands
+
+    add_platform_commands(sub)
     return parser
 
 
@@ -88,6 +92,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         for noisy in ("httpx", "httpx2", "httpcore", "urllib3", "huggingface_hub", "sentence_transformers", "chromadb"):
             logging.getLogger(noisy).setLevel(logging.WARNING)
     settings = Settings.from_env()
+    from job_intel.cli_platform import PLATFORM_COMMANDS
+
+    if args.command in PLATFORM_COMMANDS:
+        from job_intel.cli_platform import run as run_platform
+
+        return run_platform(args, settings)
     if args.command == "enrich":
         from job_intel.enrich.cli_enrich import run as run_enrich
 
@@ -96,7 +106,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         from job_intel.label_cli import run as run_label
 
         return run_label(args, settings)
-    if args.command in {"profile", "match", "llm-status", "app", "match-eval", "regress"}:
+    if args.command in {"profile", "match", "llm-status", "match-eval", "regress"}:
         from job_intel.match.cli_match import run as run_match
 
         return run_match(args, settings)

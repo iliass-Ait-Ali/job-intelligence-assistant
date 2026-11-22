@@ -89,3 +89,36 @@ def student_profile():
 @pytest.fixture(scope="session")
 def ml_profile():
     return _profile("cv_en_ml_engineer.txt")
+
+
+# ---- platform fixtures (services, API, UI) ---------------------------------------------------------
+
+
+class FakeReranker:
+    """Deterministic stand-in for the cross-encoder: scores a passage by query-word overlap."""
+
+    name = "fake-reranker"
+
+    def score(self, query, passages):
+        import numpy as np
+
+        words = set(query.casefold().split())
+        return np.asarray([len(words & set(p.casefold().split())) for p in passages], dtype=np.float32)
+
+
+@pytest.fixture(scope="session")
+def platform_service(match_searcher):
+    """A JobIntelService over the synthetic match corpus, with FAISS and a fake re-ranker (no downloads)."""
+    from match_data import match_jobs
+
+    from job_intel.enrich.postings import enrich_all
+    from job_intel.search.faiss_index import FaissChunkIndex
+    from job_intel.search.retrieve import Searcher
+    from job_intel.services import JobIntelService
+
+    postings, rejected = enrich_all(match_jobs())
+    assert not rejected
+    records = {j["id"]: j for j in match_jobs()}
+    searcher = Searcher(FaissChunkIndex(match_searcher.index), match_searcher.embedder, records, reranker=FakeReranker())
+    return JobIntelService(Settings(user_agent="tests"), searcher_factory=lambda: searcher,
+                           postings_override={p.id: p for p in postings})

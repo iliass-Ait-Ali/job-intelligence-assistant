@@ -132,7 +132,7 @@ def role_profiles(df: pd.DataFrame, top: int = 8, min_postings: int = 10) -> pd.
         for _, r in fam.iterrows():
             rows.append({"role_family": family, "skill": r["skill"], "share_in_family": r["share"],
                          "distinctiveness": r["distinctiveness"], "postings": len(group)})  # fmt: skip
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=["role_family", "skill", "share_in_family", "distinctiveness", "postings"])
 
 
 def weekly_trend(df: pd.DataFrame, skills: list[str]) -> pd.DataFrame:
@@ -147,7 +147,7 @@ def weekly_trend(df: pd.DataFrame, skills: list[str]) -> pd.DataFrame:
         for s in skills:
             row[s] = sum(s in sk for sk in g["skills"]) / len(g)
         rows.append(row)
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=["week", "postings", *skills])
 
 
 def snapshot_comparison(old: pd.DataFrame, new: pd.DataFrame, top: int = 15) -> pd.DataFrame:

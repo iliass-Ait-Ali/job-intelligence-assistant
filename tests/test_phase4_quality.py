@@ -221,9 +221,10 @@ def test_human_audit_marks_are_scored_separately_per_source(tmp_path):
 
 
 def test_the_cli_refuses_to_pretend_ollama_ran(match_searcher, tmp_path, monkeypatch, capsys):
-    from job_intel.search import service
-    from search_data import write_jobs
     from match_data import match_jobs
+    from search_data import write_jobs
+
+    from job_intel.search import service
 
     monkeypatch.setattr(service, "open_searcher", lambda settings, **kw: (match_searcher, []))
     monkeypatch.setenv("JOBINTEL_EVAL_DIR", str(tmp_path / "eval"))

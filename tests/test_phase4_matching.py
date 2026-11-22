@@ -18,7 +18,6 @@ from job_intel.match import evaluate as me  # noqa: E402
 from job_intel.match.matcher import evaluate_constraints, match_candidate  # noqa: E402
 from job_intel.match.models import Preferences  # noqa: E402
 from job_intel.match.requirements import extract_requirements  # noqa: E402
-from job_intel.search import evaluate as se  # noqa: E402
 from job_intel.search.errors import EvalError  # noqa: E402
 from job_intel.search.filters import IndexedJob  # noqa: E402
 

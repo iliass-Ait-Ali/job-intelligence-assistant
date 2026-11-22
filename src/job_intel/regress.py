@@ -46,7 +46,8 @@ def collect_metrics(settings: Settings, cv_dir: Path, *, with_index: bool = True
     if not with_index:
         return metrics, notes
     try:
-        from job_intel.match import diagnostics, evaluate as me
+        from job_intel.match import diagnostics
+        from job_intel.match import evaluate as me
         from job_intel.search import service
 
         searcher, _ = service.open_searcher(settings)

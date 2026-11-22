@@ -429,7 +429,7 @@ def format_report(report: EvalReport, per_query: bool = False) -> str:
     ]
     if report.pairwise:
         lines += ["", "Paired per-query differences (a - b), bootstrap 95% interval over queries when n >= 5:"]
-        for key, p in report.pairwise.items():
+        for _key, p in report.pairwise.items():
             ci = f" CI95=[{p['ci95'][0]:+.3f}, {p['ci95'][1]:+.3f}]" if p["ci95"] else " CI95=n/a (too few queries)"
             lines.append(f"  {p['a']:>8} vs {p['b']:<8} {p['metric']:<18} mean diff {p['mean_diff']:+.3f}  wins/ties/losses {p['wins']}/{p['ties']}/{p['losses']}{ci}")
     if per_query:

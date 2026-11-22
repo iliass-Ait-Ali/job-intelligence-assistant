@@ -1,0 +1,19 @@
+# Compatibility-score weights (src/job_intel/match/scoring.py).
+#
+# score    = 100 * sum_i(w_i * c_i) / sum_{known i}(w_i)      (unknown components are left out)
+# ranking  = coverage * score + (1 - coverage) * 50           (used to sort; unknown = neutral)
+#
+# Weights need not sum to 1 (they are renormalised). They are PRIOR choices, justified in
+# docs/learn/04_matching_scoring.md, and checked by evaluation/calibrate_scoring.py, which reports how a
+# fitted set compares under leave-one-candidate-out cross-validation. A fitted set is only adopted if it
+# beats this one out of sample; see reports/evaluation_report.md.
+weights:
+  required_skills: 0.30
+  semantic: 0.20
+  role: 0.15
+  experience: 0.10
+  preferred_skills: 0.08
+  education: 0.05
+  languages: 0.05
+  location: 0.04
+  contract: 0.03

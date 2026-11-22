@@ -487,10 +487,23 @@ def parse_cv(text: str, *, today: date | None = None, fallbacks: bool = True) ->
         if _OBJECTIVE.search(ln):
             roles += [name for name, rx in ROLE_LEXICON if rx.search(ln)]
 
+    certifications = [ln.strip().removeprefix("- ").strip()[:200] for _, ln in sections["certifications"]
+                      if len(ln.strip()) >= 4][:15]  # fmt: skip
+    from job_intel.enrich.sector import classify_sector
+    from job_intel.match.softskills import find_soft_skills
+
+    sectors: list[str] = []
+    for exp in experiences:  # the sector of each experience, from its own lines only
+        sector, _hits = classify_sector(exp.organization, exp.title, " ".join(exp.bullets))
+        if sector and sector not in sectors:
+            sectors.append(sector)
+    soft = find_soft_skills("\n".join(ln for i, ln in enumerate(lines) if section_of[i] not in {"heading", "ignored"}))
+
     profile = CandidateProfile(
         detected_language=detect_language(text),  # type: ignore[arg-type]
         headline=headline, summary=summary, target_roles=roles, education=education, skills=skills,
-        experiences=experiences, projects=projects, spoken_languages=spoken,
+        experiences=experiences, projects=projects, spoken_languages=spoken, certifications=certifications,
+        experience_sectors=sectors, soft_skills=soft,
     )  # fmt: skip
     warn = profile.warnings
     if not any(sections[k] for k in ("experience", "education", "skills", "projects")):

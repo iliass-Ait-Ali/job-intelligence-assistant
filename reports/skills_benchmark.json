@@ -1,0 +1,500 @@
+{
+  "label_note": "Gold skills written by the AI assistant that built the extractor (blind to its output, written rules), NOT human-verified; 20 listings is a small sample, so read the numbers as indicative.",
+  "n_docs": 12,
+  "n_gold": 105,
+  "n_predicted": 81,
+  "micro": {
+    "precision": 0.9135802469135802,
+    "recall": 0.7047619047619048,
+    "f1": 0.7956989247311829
+  },
+  "macro": {
+    "precision": 0.9004629629629629,
+    "recall": 0.6956071706071706,
+    "f1": 0.7644781144781144
+  },
+  "in_vocabulary_recall": 0.8705882352941177,
+  "oov_share_of_gold": 0.19047619047619047,
+  "errors": {
+    "false_positives": [
+      [
+        "Agile",
+        1
+      ],
+      [
+        "Data engineering",
+        1
+      ],
+      [
+        "Data analysis",
+        1
+      ],
+      [
+        "Forecasting",
+        1
+      ],
+      [
+        "Machine learning",
+        1
+      ],
+      [
+        "AWS",
+        1
+      ],
+      [
+        "Deep learning",
+        1
+      ]
+    ],
+    "false_negatives": [
+      [
+        "Prompt engineering",
+        3
+      ],
+      [
+        "OOV:LLM evaluation",
+        2
+      ],
+      [
+        "AI agents",
+        2
+      ],
+      [
+        "OOV:MCP",
+        1
+      ],
+      [
+        "OOV:LangGraph",
+        1
+      ],
+      [
+        "OOV:Adobe Launch",
+        1
+      ],
+      [
+        "OOV:Google Analytics",
+        1
+      ],
+      [
+        "OOV:Adobe Analytics",
+        1
+      ],
+      [
+        "OOV:Google Ads",
+        1
+      ],
+      [
+        "OOV:Google Tag Manager",
+        1
+      ],
+      [
+        "OOV:Tealium",
+        1
+      ],
+      [
+        "OOV:NoSQL",
+        1
+      ],
+      [
+        "Git",
+        1
+      ],
+      [
+        "OOV:AI coding assistants",
+        1
+      ],
+      [
+        "OOV:AI orchestration frameworks",
+        1
+      ],
+      [
+        "Vector database",
+        1
+      ],
+      [
+        "OOV:Confluence",
+        1
+      ],
+      [
+        "Excel",
+        1
+      ],
+      [
+        "OOV:SAP S/4HANA",
+        1
+      ],
+      [
+        "OOV:Generative AI",
+        1
+      ]
+    ]
+  },
+  "per_doc": [
+    {
+      "job_id": "arbeitnow:forward-deployed-ai-engineer-multi-agent-systems-munich-233132",
+      "precision": 1.0,
+      "recall": 0.6923076923076923,
+      "f1": 0.8181818181818181,
+      "n_gold": 13,
+      "n_pred": 9
+    },
+    {
+      "job_id": "himalayas:humanit-digital-consulting/digital-analytics-engineer-tealium-gtm-ga-full-remote-portugal",
+      "precision": 0.5,
+      "recall": 0.14285714285714285,
+      "f1": 0.22222222222222224,
+      "n_gold": 7,
+      "n_pred": 2
+    },
+    {
+      "job_id": "himalayas:arrise/mlops-engineer",
+      "precision": 1.0,
+      "recall": 0.8181818181818182,
+      "f1": 0.9,
+      "n_gold": 11,
+      "n_pred": 9
+    },
+    {
+      "job_id": "himalayas:national-software-management/entry-level-data-analyst-business-analyst",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "n_gold": 2,
+      "n_pred": 2
+    },
+    {
+      "job_id": "himalayas:mercor/ai-ml-engineer-fully-remote-upto-85-hr",
+      "precision": 1.0,
+      "recall": 0.6,
+      "f1": 0.7499999999999999,
+      "n_gold": 5,
+      "n_pred": 3
+    },
+    {
+      "job_id": "himalayas:zeus/ai-engineer",
+      "precision": 0.75,
+      "recall": 0.6,
+      "f1": 0.6666666666666665,
+      "n_gold": 5,
+      "n_pred": 4
+    },
+    {
+      "job_id": "arbeitnow:werkstudent-sap-business-intelligence-bi-dortmund-131965",
+      "precision": 0.8888888888888888,
+      "recall": 0.7272727272727273,
+      "f1": 0.7999999999999999,
+      "n_gold": 11,
+      "n_pred": 9
+    },
+    {
+      "job_id": "himalayas:mutt-data/data-engineer-senior-databricks",
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8,
+      "n_gold": 8,
+      "n_pred": 12
+    },
+    {
+      "job_id": "himalayas:tiger-analytics/principal-data-scientist",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "n_gold": 12,
+      "n_pred": 12
+    },
+    {
+      "job_id": "himalayas:pagbank/engenheiro-de-software-pl-prompts-nlp",
+      "precision": 1.0,
+      "recall": 0.6,
+      "f1": 0.7499999999999999,
+      "n_gold": 15,
+      "n_pred": 9
+    },
+    {
+      "job_id": "himalayas:vurke-inc/llm-engineer",
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6666666666666666,
+      "n_gold": 4,
+      "n_pred": 2
+    },
+    {
+      "job_id": "arbeitnow:ai-software-engineer-nieuwegein-99758",
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "n_gold": 12,
+      "n_pred": 8
+    }
+  ],
+  "sector": {
+    "accuracy": 0.3333333333333333,
+    "coverage": 0.25,
+    "rows": [
+      {
+        "job_id": "arbeitnow:forward-deployed-ai-engineer-multi-agent-systems-munich-233132",
+        "predicted": null,
+        "accepted": [
+          "Consulting & Services",
+          "Mobility & Automotive"
+        ]
+      },
+      {
+        "job_id": "himalayas:humanit-digital-consulting/digital-analytics-engineer-tealium-gtm-ga-full-remote-portugal",
+        "predicted": "Media, Gaming & Entertainment",
+        "accepted": [
+          "Consulting & Services"
+        ]
+      },
+      {
+        "job_id": "himalayas:arrise/mlops-engineer",
+        "predicted": null,
+        "accepted": [
+          "Media, Gaming & Entertainment"
+        ]
+      },
+      {
+        "job_id": "himalayas:national-software-management/entry-level-data-analyst-business-analyst",
+        "predicted": null,
+        "accepted": [
+          "None"
+        ]
+      },
+      {
+        "job_id": "himalayas:mercor/ai-ml-engineer-fully-remote-upto-85-hr",
+        "predicted": null,
+        "accepted": [
+          "None"
+        ]
+      },
+      {
+        "job_id": "himalayas:zeus/ai-engineer",
+        "predicted": null,
+        "accepted": [
+          "Industry & Manufacturing"
+        ]
+      },
+      {
+        "job_id": "arbeitnow:werkstudent-sap-business-intelligence-bi-dortmund-131965",
+        "predicted": null,
+        "accepted": [
+          "Consulting & Services"
+        ]
+      },
+      {
+        "job_id": "himalayas:mutt-data/data-engineer-senior-databricks",
+        "predicted": "E-commerce & Retail",
+        "accepted": [
+          "None"
+        ]
+      },
+      {
+        "job_id": "himalayas:tiger-analytics/principal-data-scientist",
+        "predicted": null,
+        "accepted": [
+          "Consulting & Services"
+        ]
+      },
+      {
+        "job_id": "himalayas:pagbank/engenheiro-de-software-pl-prompts-nlp",
+        "predicted": null,
+        "accepted": [
+          "Finance & Banking"
+        ]
+      },
+      {
+        "job_id": "himalayas:vurke-inc/llm-engineer",
+        "predicted": null,
+        "accepted": [
+          "None"
+        ]
+      },
+      {
+        "job_id": "arbeitnow:ai-software-engineer-nieuwegein-99758",
+        "predicted": "E-commerce & Retail",
+        "accepted": [
+          "E-commerce & Retail"
+        ]
+      }
+    ]
+  },
+  "set": "held-out test (12 listings, seed 43)",
+  "dev_after_fixes": {
+    "n_docs": 20,
+    "n_gold": 248,
+    "micro": {
+      "precision": 0.9811320754716981,
+      "recall": 0.8387096774193549,
+      "f1": 0.9043478260869565
+    },
+    "macro": {
+      "precision": 0.9299200799200799,
+      "recall": 0.7780772291434056,
+      "f1": 0.8330455459195353
+    },
+    "in_vocabulary_recall": 0.9585253456221198,
+    "sector": {
+      "accuracy": 1.0,
+      "coverage": 0.15,
+      "rows": [
+        {
+          "job_id": "himalayas:your-personal-ai/natural-language-processing-nlp-engineer",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:senior-llm-engineer-hallbergmoos-61015",
+          "predicted": null,
+          "accepted": [
+            "Industry & Manufacturing"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:ai-solutions-engineer-all-genders-munich-bavaria-147383",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "himalayas:entefy/ml-engineer-nlp-remote-position",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "himalayas:creative-chaos/data-scientist",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "himalayas:cloud-counselage-pvt-ltd/data-science-intern",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:workingstudent-data-maintenance-korbach-168720",
+          "predicted": null,
+          "accepted": [
+            "Mobility & Automotive"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:senior-data-engineer-mi-platform-166224",
+          "predicted": null,
+          "accepted": [
+            "Finance & Banking"
+          ]
+        },
+        {
+          "job_id": "himalayas:sosi/data-scientist-7322761131",
+          "predicted": null,
+          "accepted": [
+            "Public sector & Education"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:principal-data-scientist-389863",
+          "predicted": null,
+          "accepted": [
+            "E-commerce & Retail",
+            "Mobility & Automotive"
+          ]
+        },
+        {
+          "job_id": "himalayas:thehivecareers/data-scientist",
+          "predicted": null,
+          "accepted": [
+            "Finance & Banking",
+            "None"
+          ]
+        },
+        {
+          "job_id": "himalayas:metasys/data-scientist-internship",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:business-data-analyst-cdi-saint-denis-394175",
+          "predicted": "E-commerce & Retail",
+          "accepted": [
+            "E-commerce & Retail"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:applied-ai-engineer-zurich-376741",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:senior-ai-engineer-consultant-zurich-oerlikon-251066",
+          "predicted": "Consulting & Services",
+          "accepted": [
+            "Consulting & Services"
+          ]
+        },
+        {
+          "job_id": "himalayas:census-sa/census-ai-ml-data-science-internship",
+          "predicted": null,
+          "accepted": [
+            "Cybersecurity"
+          ]
+        },
+        {
+          "job_id": "himalayas:commit/senior-data-science-engineer-llm-nlp",
+          "predicted": "Finance & Banking",
+          "accepted": [
+            "Finance & Banking"
+          ]
+        },
+        {
+          "job_id": "himalayas:photon-interactive-uk-limited/data-scientist-offshore",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "himalayas:v4c-ai/data-engineer-mexico",
+          "predicted": null,
+          "accepted": [
+            "None"
+          ]
+        },
+        {
+          "job_id": "arbeitnow:ai-solutions-engineer-voice-chatbots-remote-berlin-468784",
+          "predicted": null,
+          "accepted": [
+            "Telecom"
+          ]
+        }
+      ]
+    }
+  },
+  "dev_before_fixes": {
+    "n_docs": 20,
+    "n_gold": 248,
+    "micro": {
+      "precision": 0.9801980198019802,
+      "recall": 0.7983870967741935,
+      "f1": 0.88
+    },
+    "macro": {
+      "precision": 0.9268681318681319,
+      "recall": 0.7335065220726985,
+      "f1": 0.7989273286011901
+    },
+    "in_vocabulary_recall": 0.9124423963133641
+  }
+}

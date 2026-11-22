@@ -56,9 +56,20 @@ _PATTERNS = {
 }
 
 
+_BENEFIT_LINE = re.compile(
+    r"insurance|dental|medical|pension|parental|wellness|wellbeing|well-being|gym|vacation|holiday|paid leave|"
+    r"mutuelle|prevoyance|tickets? restaurant|krankenversicherung|altersvorsorge|urlaub|fitness"
+)
+
+
+def strip_benefits(text: str | None) -> str:
+    """Drop benefit lines ("private medical insurance", "gym"): they describe perks, not the employer's sector."""
+    return "\n".join(ln for ln in (text or "").split("\n") if not _BENEFIT_LINE.search(fold(ln)))
+
+
 def classify_sector(*texts: str | None) -> tuple[str | None, list[str]]:
-    """(sector or None, keywords that triggered it)."""
-    folded = fold(" \n ".join(t for t in texts if t))
+    """(sector or None, keywords that triggered it). Benefit lines are ignored."""
+    folded = fold(" \n ".join(strip_benefits(t) for t in texts if t))
     best: tuple[int, str] | None = None
     hits_by_sector: dict[str, list[str]] = {}
     for sector, patterns in _PATTERNS.items():

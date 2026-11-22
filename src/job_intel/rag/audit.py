@@ -20,13 +20,12 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections import Counter
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from job_intel.match.models import CandidateProfile
 from job_intel.match.taxonomy import find_skills
 from job_intel.rag.evidence import EvidencePack
-from job_intel.rag.explain import Explanation, Gap, Preparation, Strength, verify_items
+from job_intel.rag.explain import Explanation, Gap, Strength, verify_items
 
 
 def norm(text: str) -> str:
