@@ -94,9 +94,9 @@ but **0.637 out-of-sample** → over-fitting detected, documented defaults kept.
 **1.00**, recall 0.72.
 
 **Assistant** (26 EN/FR questions, automatic metrics): routing accuracy 1.00 in both modes; with the local
-`llama3.2:3b`, 98.5% of proposed citations are valid but **28% of proposed sentences fail the verifier** and are
-removed (19% of answers fall back to the deterministic mode); deterministic answers: 98.8% pass. No salary /
-probability / hiring-guarantee claim reached a user. Median latency 0.09 s (deterministic) vs 8.2 s (LLM).
+`llama3.2:3b`, 98.5% of proposed citations are valid but **31% of proposed sentences fail the verifier** and are
+removed (23% of answers fall back to the deterministic mode); deterministic answers: 100% pass. No salary /
+probability / hiring-guarantee claim reached a user. Median latency 0.05 s (deterministic) vs 6.0 s (LLM).
 
 **Latency** (RTX 4060, 720 listings, warm): BM25 19 ms · dense 34 ms · hybrid 71 ms · hybrid + cross-encoder
 0.74 s · full recommendations 0.92 s. FAISS exact search 1.0 ms vs Chroma HNSW 6.6 ms per query (HNSW recall@10 =

@@ -265,7 +265,7 @@ def _gaps(s: AssistantSession, r: Route, docs: _Docs, t: dict) -> list[Sentence]
         for item in [i for i in report.missing if i.job_level != "required"][:4]:
             out.append(Sentence(t["gap_opt"].format(skill=item.skill), [jid]))
         for item in report.partial[:3]:
-            cites = [jid] + ([_cv_doc(docs, item.cv_evidence[0])] if item.cv_evidence else [])
+            cites = [jid] + [_cv_doc(docs, line) for line in item.cv_evidence[:3]]  # one CV line per related skill named
             out.append(Sentence(t["gap_partial"].format(skill=item.skill, hint=_lower_first(item.hint or "").rstrip(".")), cites))
         if not report.missing and not report.partial:
             named = ", ".join(i.skill for i in report.mastered[:8]) or "-"

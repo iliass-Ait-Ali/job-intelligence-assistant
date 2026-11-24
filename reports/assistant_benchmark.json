@@ -5,14 +5,14 @@
       "questions": 26,
       "routing_accuracy": 1.0,
       "citation_validity": 1.0,
-      "faithfulness": 0.988,
-      "hallucination_rate": 0.012,
+      "faithfulness": 1.0,
+      "hallucination_rate": 0.0,
       "fallback_rate": 0.0,
       "answer_relevance": 0.822,
       "retrieval_relevance": 0.933,
       "forbidden_claims_in_final": 0,
-      "latency_median_s": 0.079,
-      "latency_max_s": 0.187,
+      "latency_median_s": 0.049,
+      "latency_max_s": 0.085,
       "est_llm_tokens_per_question": 0,
       "cost": "0 € (no model)"
     },
@@ -20,15 +20,15 @@
       "questions": 26,
       "routing_accuracy": 1.0,
       "citation_validity": 0.985,
-      "faithfulness": 0.721,
-      "hallucination_rate": 0.279,
-      "fallback_rate": 0.192,
-      "answer_relevance": 0.846,
+      "faithfulness": 0.686,
+      "hallucination_rate": 0.314,
+      "fallback_rate": 0.231,
+      "answer_relevance": 0.847,
       "retrieval_relevance": 0.92,
       "forbidden_claims_in_final": 0,
-      "latency_median_s": 8.303,
-      "latency_max_s": 24.544,
-      "est_llm_tokens_per_question": 691,
+      "latency_median_s": 5.982,
+      "latency_max_s": 29.774,
+      "est_llm_tokens_per_question": 699,
       "cost": "0 € (local model)"
     }
   },
@@ -47,7 +47,7 @@
         "relevance": 0.8005319833755493,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.187,
+        "latency_s": 0.08,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -64,7 +64,7 @@
         "relevance": 0.8080180883407593,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.177,
+        "latency_s": 0.083,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -81,7 +81,7 @@
         "relevance": 0.7963327169418335,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.112,
+        "latency_s": 0.051,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -98,7 +98,7 @@
         "relevance": 0.8027945160865784,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.146,
+        "latency_s": 0.085,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -115,7 +115,7 @@
         "relevance": 0.8025779724121094,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.097,
+        "latency_s": 0.051,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -132,7 +132,7 @@
         "relevance": 0.7803080081939697,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.146,
+        "latency_s": 0.076,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -143,18 +143,15 @@
         "routed_ok": true,
         "mode": "deterministic",
         "proposed": 4,
-        "kept": 2,
-        "rejected": 2,
+        "kept": 4,
+        "rejected": 0,
         "bad_citations": 0,
-        "relevance": 0.7872862815856934,
+        "relevance": 0.7865578532218933,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.099,
+        "latency_s": 0.064,
         "est_tokens": 0,
-        "rejected_reasons": [
-          "names 'NLP', which is not in the cited snippets",
-          "names 'NLP', which is not in the cited snippets"
-        ]
+        "rejected_reasons": []
       },
       {
         "id": "a08",
@@ -169,7 +166,7 @@
         "relevance": 0.810339629650116,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.026,
+        "latency_s": 0.016,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -186,7 +183,7 @@
         "relevance": 0.7991248965263367,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.034,
+        "latency_s": 0.017,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -203,7 +200,7 @@
         "relevance": 0.8611413836479187,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 0.058,
+        "latency_s": 0.029,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -220,7 +217,7 @@
         "relevance": 0.8783451318740845,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 0.104,
+        "latency_s": 0.052,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -237,7 +234,7 @@
         "relevance": 0.8798499703407288,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 0.104,
+        "latency_s": 0.061,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -254,7 +251,7 @@
         "relevance": 0.779510498046875,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.061,
+        "latency_s": 0.04,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -271,7 +268,7 @@
         "relevance": 0.7876787185668945,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.04,
+        "latency_s": 0.027,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -288,7 +285,7 @@
         "relevance": 0.7856154441833496,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.049,
+        "latency_s": 0.031,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -305,7 +302,7 @@
         "relevance": 0.8152499198913574,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.057,
+        "latency_s": 0.046,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -322,7 +319,7 @@
         "relevance": 0.8188694715499878,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.055,
+        "latency_s": 0.038,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -339,7 +336,7 @@
         "relevance": 0.8518877029418945,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.045,
+        "latency_s": 0.043,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -356,7 +353,7 @@
         "relevance": 0.8110657930374146,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.027,
+        "latency_s": 0.018,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -373,7 +370,7 @@
         "relevance": 0.8016195297241211,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.032,
+        "latency_s": 0.013,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -390,7 +387,7 @@
         "relevance": 0.8184096217155457,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.038,
+        "latency_s": 0.013,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -407,7 +404,7 @@
         "relevance": 0.8418396711349487,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.031,
+        "latency_s": 0.013,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -424,7 +421,7 @@
         "relevance": 0.8908798694610596,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 0.185,
+        "latency_s": 0.075,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -441,7 +438,7 @@
         "relevance": 0.8692697882652283,
         "retrieval_relevance": 0.8,
         "forbidden_in_final": false,
-        "latency_s": 0.102,
+        "latency_s": 0.062,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -458,7 +455,7 @@
         "relevance": 0.8872170448303223,
         "retrieval_relevance": 0.8,
         "forbidden_in_final": false,
-        "latency_s": 0.174,
+        "latency_s": 0.082,
         "est_tokens": 0,
         "rejected_reasons": []
       },
@@ -475,7 +472,7 @@
         "relevance": 0.8045437335968018,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 0.112,
+        "latency_s": 0.059,
         "est_tokens": 0,
         "rejected_reasons": []
       }
@@ -494,7 +491,7 @@
         "relevance": 0.8728094100952148,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 21.236,
+        "latency_s": 19.354,
         "est_tokens": 2890,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)",
@@ -517,7 +514,7 @@
         "relevance": 0.7888417840003967,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 14.341,
+        "latency_s": 7.012,
         "est_tokens": 2208,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -536,7 +533,7 @@
         "relevance": 0.7963327169418335,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 10.955,
+        "latency_s": 6.028,
         "est_tokens": 1406,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)",
@@ -559,7 +556,7 @@
         "relevance": 0.8568957448005676,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 7.971,
+        "latency_s": 5.237,
         "est_tokens": 815,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -578,7 +575,7 @@
         "relevance": 0.8262907266616821,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 6.019,
+        "latency_s": 3.862,
         "est_tokens": 404,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)",
@@ -599,7 +596,7 @@
         "relevance": 0.7803080081939697,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 19.122,
+        "latency_s": 20.02,
         "est_tokens": 585,
         "rejected_reasons": []
       },
@@ -609,16 +606,21 @@
         "intent": "missing_skills",
         "routed_ok": true,
         "mode": "llm-ollama",
-        "proposed": 3,
-        "kept": 3,
-        "rejected": 0,
+        "proposed": 8,
+        "kept": 4,
+        "rejected": 4,
         "bad_citations": 0,
-        "relevance": 0.888413667678833,
+        "relevance": 0.8859679698944092,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 3.751,
-        "est_tokens": 193,
-        "rejected_reasons": []
+        "latency_s": 10.21,
+        "est_tokens": 231,
+        "rejected_reasons": [
+          "says 'Docker' is missing but the CV does mention it",
+          "the cited documents are not about this sentence (no shared skill or content words)",
+          "the cited documents are not about this sentence (no shared skill or content words)",
+          "the cited documents are not about this sentence (no shared skill or content words)"
+        ]
       },
       {
         "id": "a08",
@@ -633,7 +635,7 @@
         "relevance": 0.8182156085968018,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 9.378,
+        "latency_s": 3.992,
         "est_tokens": 203,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)",
@@ -647,17 +649,17 @@
         "intent": "missing_skills",
         "routed_ok": true,
         "mode": "llm-ollama",
-        "proposed": 8,
-        "kept": 7,
+        "proposed": 9,
+        "kept": 8,
         "rejected": 1,
         "bad_citations": 0,
-        "relevance": 0.8525932431221008,
+        "relevance": 0.8074433207511902,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 6.724,
-        "est_tokens": 277,
+        "latency_s": 4.734,
+        "est_tokens": 282,
         "rejected_reasons": [
-          "says 'AWS' is missing but the CV does mention it"
+          "the cited documents are not about this sentence (no shared skill or content words)"
         ]
       },
       {
@@ -665,16 +667,16 @@
         "expected_intent": "companies_with_skill",
         "intent": "companies_with_skill",
         "routed_ok": true,
-        "mode": "llm-ollama",
-        "proposed": 24,
-        "kept": 24,
+        "mode": "deterministic-fallback",
+        "proposed": 8,
+        "kept": 8,
         "rejected": 0,
         "bad_citations": 0,
-        "relevance": 0.7823171615600586,
+        "relevance": 0.8611413836479187,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 14.399,
-        "est_tokens": 693,
+        "latency_s": 17.169,
+        "est_tokens": 838,
         "rejected_reasons": []
       },
       {
@@ -690,7 +692,7 @@
         "relevance": 0.9137884378433228,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 11.709,
+        "latency_s": 16.191,
         "est_tokens": 327,
         "rejected_reasons": []
       },
@@ -707,7 +709,7 @@
         "relevance": 0.8798499703407288,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 16.799,
+        "latency_s": 29.774,
         "est_tokens": 891,
         "rejected_reasons": []
       },
@@ -724,7 +726,7 @@
         "relevance": 0.8060485124588013,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 7.552,
+        "latency_s": 8.106,
         "est_tokens": 1150,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -743,7 +745,7 @@
         "relevance": 0.7876787185668945,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 24.544,
+        "latency_s": 15.622,
         "est_tokens": 943,
         "rejected_reasons": []
       },
@@ -760,7 +762,7 @@
         "relevance": 0.8408221006393433,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 8.418,
+        "latency_s": 12.095,
         "est_tokens": 601,
         "rejected_reasons": []
       },
@@ -777,7 +779,7 @@
         "relevance": 0.8664935231208801,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 8.189,
+        "latency_s": 7.726,
         "est_tokens": 395,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)",
@@ -798,7 +800,7 @@
         "relevance": 0.8736468553543091,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 6.414,
+        "latency_s": 3.562,
         "est_tokens": 333,
         "rejected_reasons": [
           "no citation"
@@ -817,7 +819,7 @@
         "relevance": 0.8275005221366882,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 7.583,
+        "latency_s": 5.936,
         "est_tokens": 330,
         "rejected_reasons": [
           "names 'MLOps', which is not in the cited snippets",
@@ -838,7 +840,7 @@
         "relevance": 0.8663915395736694,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 5.201,
+        "latency_s": 9.41,
         "est_tokens": 276,
         "rejected_reasons": []
       },
@@ -855,7 +857,7 @@
         "relevance": 0.8326061964035034,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 5.328,
+        "latency_s": 3.332,
         "est_tokens": 233,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -874,7 +876,7 @@
         "relevance": 0.8926567435264587,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 8.479,
+        "latency_s": 3.948,
         "est_tokens": 253,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -893,7 +895,7 @@
         "relevance": 0.8380333781242371,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 7.871,
+        "latency_s": 1.954,
         "est_tokens": 188,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -912,7 +914,7 @@
         "relevance": 0.9411919116973877,
         "retrieval_relevance": 1.0,
         "forbidden_in_final": false,
-        "latency_s": 3.872,
+        "latency_s": 2.067,
         "est_tokens": 622,
         "rejected_reasons": []
       },
@@ -929,7 +931,7 @@
         "relevance": 0.8686997294425964,
         "retrieval_relevance": 0.8,
         "forbidden_in_final": false,
-        "latency_s": 9.022,
+        "latency_s": 3.75,
         "est_tokens": 430,
         "rejected_reasons": [
           "contains an unsupported claim about probability, salary or guarantees ('salary')",
@@ -949,7 +951,7 @@
         "relevance": 0.892253041267395,
         "retrieval_relevance": 0.8,
         "forbidden_in_final": false,
-        "latency_s": 11.615,
+        "latency_s": 5.51,
         "est_tokens": 643,
         "rejected_reasons": [
           "the cited documents are not about this sentence (no shared skill or content words)"
@@ -968,7 +970,7 @@
         "relevance": 0.8045437335968018,
         "retrieval_relevance": null,
         "forbidden_in_final": false,
-        "latency_s": 6.774,
+        "latency_s": 1.127,
         "est_tokens": 688,
         "rejected_reasons": [
           "no citation",

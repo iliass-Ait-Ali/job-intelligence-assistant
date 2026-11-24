@@ -71,7 +71,7 @@ def render() -> None:
                                    hovertemplate="%{y} → %{x}: %{z:.0%} of listings asking for %{y} also ask for %{x}<extra></extra>"))  # fmt: skip
         fig.update_layout(title="Co-occurrence: P(column skill | row skill)", height=560, plot_bgcolor=SURFACE,
                           xaxis=dict(tickangle=-40, showgrid=False), yaxis=dict(autorange="reversed", showgrid=False))  # fmt: skip
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
         pairs = ma.cooccurrence(seg, top_skills=25, min_count=max(3, len(seg) // 60))
         st.markdown("**Strongest associations** (lift > 1: asked together more often than chance)")
         st.dataframe(pairs.head(20).style.format({"p_b_given_a": "{:.0%}", "lift": "{:.2f}"}), width="stretch", hide_index=True)
@@ -97,14 +97,14 @@ def render() -> None:
         fig.add_bar(x=trend["week"], y=trend["postings"], marker=dict(color=SERIES[0], cornerradius=4), name="listings",
                     hovertemplate="week of %{x|%d %b}: %{y} listings<extra></extra>")  # fmt: skip
         fig.update_layout(title="Listings by publication week", height=280, showlegend=False)
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
         fig2 = go.Figure()
         for i, s in enumerate(tracked[:8]):
             fig2.add_scatter(x=trend["week"], y=trend[s], mode="lines+markers", name=s, line=dict(width=2, color=SERIES[i]),
                              marker=dict(size=8, line=dict(color=SURFACE, width=2)),
                              hovertemplate=f"{s}: %{{y:.0%}} of the week's listings<extra></extra>")  # fmt: skip
         fig2.update_layout(title="Share of the week's listings asking for each skill", height=320, yaxis=dict(tickformat=".0%"))
-        st.plotly_chart(fig2, width="stretch")
+        st.plotly_chart(fig2, width="stretch", config={"displayModeBar": False})
         st.caption("Caution: most listings were collected on 2026-11-22 and older weeks contain few listings (the boards drop "
                    "expired jobs), so early weeks are noisy.")  # fmt: skip
         old = _snapshot_df()
@@ -117,5 +117,5 @@ def render() -> None:
                          marker=dict(color=SERIES[0], cornerradius=4))  # fmt: skip
             fig3.update_layout(title="Skill demand in two collection snapshots", barmode="group", height=520,
                                xaxis=dict(tickformat=".0%"), yaxis=dict(autorange="reversed"), font=dict(color=INK_2))  # fmt: skip
-            st.plotly_chart(fig3, width="stretch")
+            st.plotly_chart(fig3, width="stretch", config={"displayModeBar": False})
             st.caption("The two snapshots differ in sources (the second adds Himalayas), so differences mix time and source effects.")

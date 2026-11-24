@@ -25,7 +25,8 @@ def wait_idle(page: Page, timeout: float = 240.0) -> None:
     deadline = time.time() + timeout
     while time.time() < deadline:
         running = page.locator('[data-testid="stStatusWidget"]').count() > 0
-        spinning = page.locator('[data-testid="stSpinner"]').count() > 0
+        spinning = page.locator('[data-testid*="Spinner"], [data-testid*="spinner"]').count() > 0
+        spinning = spinning or page.get_by_text("Loading models and indexes").count() > 0
         if not running and not spinning:
             page.wait_for_timeout(800)
             return
@@ -62,6 +63,7 @@ def main() -> int:
         page = browser.new_page(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
         page.set_default_timeout(240_000)
         goto(page, url, "")
+        page.get_by_text("listings indexed").wait_for(timeout=600_000)  # first start: models and indexes load once
         shot(page, "01_overview")
 
         # load a synthetic CV through the UI (client-side navigation keeps the session)

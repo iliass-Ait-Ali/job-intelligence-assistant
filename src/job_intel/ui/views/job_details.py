@@ -85,7 +85,7 @@ def render() -> None:
         st.divider()
         left, right = st.columns([3, 2])
         with left:
-            st.plotly_chart(_waterfall(score), width="stretch")
+            st.plotly_chart(_waterfall(score), width="stretch", config={"displayModeBar": False})
         with right:
             st.markdown(f"<div class='ji-score'>{c.score_ring(score.score)}<div><b>{c.BAND_LABEL[score.band]}</b><br>"
                         f"<span class='ji-muted'>coverage {round(100 * score.coverage)}% · ranking score {score.ranking_score:.0f}</span></div></div>",

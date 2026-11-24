@@ -141,7 +141,7 @@ def analyse_gap(profile: CandidateProfile, match, declared: Mapping[str, str] | 
             continue
         if sm.status == "transferable" and sm.via:
             items.append(SkillGap(name, "transferable", sm.job_level, sm.job_evidence,
-                                  [e.text for e in sm.cv_evidence[:1]], via=sm.via[0],
+                                  [e.text for e in sm.cv_evidence[:3]], via=sm.via[0],
                                   hint=f"You know {', '.join(sm.via)}; {name} is related but not equivalent."))  # fmt: skip
             continue
         if declared.get(name) == "lack":

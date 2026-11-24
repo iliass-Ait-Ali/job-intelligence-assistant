@@ -48,8 +48,8 @@ def render() -> None:
         st.warning(retrieval["label_note"], icon="⚠️")
         sysm = retrieval["systems"]
         a, b = st.columns(2)
-        a.plotly_chart(_ci_bar(sysm, "ndcg@10", "nDCG@10 (mean over queries, 95% bootstrap CI)"), width="stretch")
-        b.plotly_chart(_ci_bar(sysm, "mrr@10", "MRR@10 (relevant = grade ≥ 1)"), width="stretch")
+        a.plotly_chart(_ci_bar(sysm, "ndcg@10", "nDCG@10 (mean over queries, 95% bootstrap CI)"), width="stretch", config={"displayModeBar": False})
+        b.plotly_chart(_ci_bar(sysm, "mrr@10_strict", "MRR@10, strict (relevant = grade 2; grade ≥ 1 saturates at 1.0)"), width="stretch", config={"displayModeBar": False})
         rows = [{"system": n, **{m: round(v["mean"], 3) for m, v in s.items() if isinstance(v, dict) and "mean" in v}} for n, s in sysm.items()]
         st.dataframe(rows, width="stretch", hide_index=True)
         st.caption(f"{retrieval['n_queries']} queries · corpus: {retrieval['corpus']} · pooled judgments: {retrieval['n_judgments']}")

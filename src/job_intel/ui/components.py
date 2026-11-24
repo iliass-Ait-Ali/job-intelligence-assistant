@@ -54,6 +54,7 @@ h1 {{ font-weight: 700; }}
 a.ji-apply {{ display:inline-block; background:{BRAND}; color:#fff !important; padding:5px 12px; border-radius:8px;
              text-decoration:none; font-size:.85rem; font-weight:600; }}
 section[data-testid="stSidebar"] {{ background: #ffffff; border-right: 1px solid #eceef2; }}
+.modebar-container {{ display: none !important; }}  /* Plotly toolbar overlaps chart titles; hover tooltips stay */
 </style>
 """
 

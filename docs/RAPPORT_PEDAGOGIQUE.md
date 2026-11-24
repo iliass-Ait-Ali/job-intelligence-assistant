@@ -24,10 +24,10 @@ dont **chaque phrase cite ses sources** et passe un vérificateur. Le LLM n'est 
 * extraction de compétences : F1 = **0,80** sur un échantillon de test tenu à l'écart (précision 0,91, rappel 0,70) ;
 * exclusions éliminatoires : **aucune offre éligible exclue à tort** (précision 1,0) ;
 * poids du score : la calibration automatique **sur-apprend** (0,79 → 0,64 hors échantillon) → poids par défaut gardés ;
-* assistant : routage 100 % ; toutes les phrases affichées sont vérifiées ; le vérificateur supprime **28 %** des
-  phrases proposées par le petit LLM local (llama3.2:3b), qui retombe sur le mode déterministe dans 19 % des cas ;
+* assistant : routage 100 % ; toutes les phrases affichées sont vérifiées ; le vérificateur supprime **31 %** des
+  phrases proposées par le petit LLM local (llama3.2:3b), qui retombe sur le mode déterministe dans 23 % des cas ;
   aucune affirmation de salaire, de probabilité ou de garantie d'embauche n'a atteint l'utilisateur (voir §8) ;
-* vitesse (GPU, à chaud) : hybride 71 ms, recommandations complètes 0,9 s, réponse déterministe 0,09 s, LLM 8 s.
+* vitesse (GPU, à chaud) : hybride 71 ms, recommandations complètes 0,9 s, réponse déterministe 0,05 s, LLM 6 s.
 
 ---
 
