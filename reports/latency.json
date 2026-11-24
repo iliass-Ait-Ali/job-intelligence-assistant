@@ -1,0 +1,90 @@
+{
+  "steps": {
+    "load embedding model + open Chroma (cold)": {
+      "ms": 24174
+    },
+    "build FAISS flat index from stored vectors (cold)": {
+      "ms": 835,
+      "chunks": 3833
+    },
+    "load cross-encoder (cold)": {
+      "ms": 4098
+    },
+    "search · keyword (warm)": {
+      "median_ms": 24.0,
+      "p95_ms": 26.8,
+      "runs": 20
+    },
+    "search · bm25 (warm)": {
+      "median_ms": 19.3,
+      "p95_ms": 32.9,
+      "runs": 20
+    },
+    "search · semantic (warm)": {
+      "median_ms": 34.1,
+      "p95_ms": 95.4,
+      "runs": 20
+    },
+    "search · hybrid (warm)": {
+      "median_ms": 70.7,
+      "p95_ms": 89.2,
+      "runs": 20
+    },
+    "search · hybrid_rerank (warm)": {
+      "median_ms": 735.8,
+      "p95_ms": 878.5,
+      "runs": 20
+    },
+    "embed one query": {
+      "median_ms": 21.0,
+      "p95_ms": 26.9,
+      "runs": 20
+    },
+    "read + parse CV": {
+      "median_ms": 12.5,
+      "p95_ms": 14.9,
+      "runs": 10
+    },
+    "recommendations (cold: requirement extraction for all jobs)": {
+      "ms": 25087
+    },
+    "recommendations (warm)": {
+      "median_ms": 924.3,
+      "p95_ms": 1017.3,
+      "runs": 5
+    },
+    "skill gap + learning plan": {
+      "median_ms": 3.1,
+      "p95_ms": 413.3,
+      "runs": 5
+    },
+    "assistant answer (deterministic)": {
+      "median_ms": 91.8,
+      "p95_ms": 114.5,
+      "runs": 10
+    },
+    "assistant answer (local llama3.2:3b via Ollama)": {
+      "median_ms": 8209.2,
+      "p95_ms": 8285.4,
+      "runs": 3
+    }
+  },
+  "vector_backends": {
+    "faiss_flat_ms_median": 0.99,
+    "chroma_hnsw_ms_median": 6.63,
+    "hnsw_recall@10_vs_exact": 1.0
+  },
+  "resources": {
+    "device": "cuda",
+    "torch": "2.11.0+cu128",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "gpu_peak_memory_mb": 1672,
+    "cpu": "Intel64 Family 6 Model 191 Stepping 2, GenuineIntel",
+    "python": "3.13.0",
+    "process_rss_mb": 3781,
+    "chroma_index_mb": 55.3,
+    "faiss_vectors_mb": 11.2
+  },
+  "hardware": "Intel64 Family 6 Model 191 Stepping 2, GenuineIntel · NVIDIA GeForce RTX 4060 Laptop GPU · torch 2.11.0+cu128 on cuda",
+  "llm_cost": "local model: no per-call cost; an API model would cost tokens x price (see assistant benchmark for token volume)"
+}

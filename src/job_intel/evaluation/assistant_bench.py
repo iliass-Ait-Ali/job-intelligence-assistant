@@ -27,7 +27,10 @@ from statistics import mean, median
 from job_intel.config import Settings
 from job_intel.evaluation.data import write_report
 from job_intel.match.models import Preferences
-from job_intel.rag.explain import _FORBIDDEN
+
+# claims the assistant must never make (documented percentages such as "68% of listings" are facts, not violations)
+UNSAFE = re.compile(r"\b(?:probab\w*|likelihood|chances? (?:of|to|d)|guarante\w*|salary|salaries|salaire|gehalt|"
+                    r"(?:will|would) (?:be|get) hired|embauch\w*)", re.I)
 
 ROOT = Path(__file__).resolve().parents[3]
 LABEL_NOTE = ("Automatic metrics on 26 hand-written questions (EN/FR) over 3 synthetic CVs and the live corpus; no human "
@@ -89,7 +92,7 @@ def run(settings: Settings, *, use_llm: bool) -> dict:
                 "routed_ok": answer.intent == q["expected_intent"] or (q["expected_intent"] in {"top_jobs", "why_match", "missing_skills", "compare", "interview", "projects"} and answer.intent == "search" and not cv),
                 "mode": answer.mode, "proposed": proposed, "kept": len(answer.sentences), "rejected": len(answer.rejected),
                 "bad_citations": bad_cites, "relevance": relevance, "retrieval_relevance": retrieval,
-                "forbidden_in_final": bool(_FORBIDDEN.search(text)), "latency_s": answer.latency_s,
+                "forbidden_in_final": bool(UNSAFE.search(text)), "latency_s": answer.latency_s,
                 "est_tokens": (sum(len(d.text) + len(d.title) for d in answer.docs) + len(q["text"]) + len(text)) // 4 if client else 0,
                 "rejected_reasons": [r for _, r in answer.rejected][:5],
             })  # fmt: skip

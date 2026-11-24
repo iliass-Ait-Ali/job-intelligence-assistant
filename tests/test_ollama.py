@@ -97,7 +97,7 @@ def test_chat_sends_a_deterministic_schema_constrained_request_and_parses_json(s
     assert out == {"strengths": [{"claim": "x"}]}
     sent = s.requests[0]
     assert sent["model"] == "llama3.2:3b" and sent["stream"] is False and sent["format"] == SCHEMA
-    assert sent["options"] == {"temperature": 0, "seed": 0, "num_ctx": 2048}
+    assert sent["options"] == {"temperature": 0, "seed": 0, "num_ctx": 2048, "num_predict": 700}
     assert [m["role"] for m in sent["messages"]] == ["system", "user"]
 
 
@@ -132,3 +132,14 @@ def test_non_local_servers_are_refused_before_any_request(url):
 @pytest.mark.parametrize("url", ["http://localhost:11434", "http://127.0.0.1:11434", "http://[::1]:11434"])
 def test_loopback_servers_are_accepted(url):
     assert OllamaClient(base_url=url).base_url == url
+
+
+def test_operator_can_trust_an_explicit_private_host(monkeypatch):
+    from job_intel.rag.ollama import LLMPrivacyError, OllamaClient
+
+    with pytest.raises(LLMPrivacyError):
+        OllamaClient(base_url="http://ollama:11434")
+    monkeypatch.setenv("JOBINTEL_LLM_TRUSTED_HOSTS", "ollama")
+    assert OllamaClient(base_url="http://ollama:11434").base_url == "http://ollama:11434"
+    with pytest.raises(LLMPrivacyError):
+        OllamaClient(base_url="https://api.example.com")

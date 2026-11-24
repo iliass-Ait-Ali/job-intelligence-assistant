@@ -1,5 +1,5 @@
 {
-  "label_note": "Gold skills written by the AI assistant that built the extractor (blind to its output, written rules), NOT human-verified; 20 listings is a small sample, so read the numbers as indicative.",
+  "label_note": "Gold skills written by the AI assistant that built the extractor (blind to its output, written rules), NOT human-verified; a 20-listing dev set and a 12-listing held-out test set are small, so read the numbers as indicative.",
   "n_docs": 12,
   "n_gold": 105,
   "n_predicted": 81,
@@ -38,11 +38,11 @@
         1
       ],
       [
-        "AWS",
+        "Deep learning",
         1
       ],
       [
-        "Deep learning",
+        "AWS",
         1
       ]
     ],
@@ -68,19 +68,19 @@
         1
       ],
       [
-        "OOV:Adobe Launch",
-        1
-      ],
-      [
-        "OOV:Google Analytics",
-        1
-      ],
-      [
         "OOV:Adobe Analytics",
         1
       ],
       [
         "OOV:Google Ads",
+        1
+      ],
+      [
+        "OOV:Adobe Launch",
+        1
+      ],
+      [
+        "OOV:Google Analytics",
         1
       ],
       [
@@ -112,15 +112,15 @@
         1
       ],
       [
+        "OOV:SAP S/4HANA",
+        1
+      ],
+      [
         "OOV:Confluence",
         1
       ],
       [
         "Excel",
-        1
-      ],
-      [
-        "OOV:SAP S/4HANA",
         1
       ],
       [

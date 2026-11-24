@@ -155,7 +155,7 @@ class Searcher:
             raise ValueError(f"unknown engine {engine!r}; choose from {ALL_ENGINES}")
         return response
 
-    def _semantic(self, response, query, k, eligible, max_per_company) -> None:
+    def _semantic(self, response, query, k, eligible, max_per_company, snippets: bool = True) -> None:
         eligible_ids = {j.job_id for j in eligible}
         eligible_chunks = sum(j.n_chunks for j in eligible)
         vector = self.embedder.embed_queries([query])[0]
@@ -176,7 +176,8 @@ class Searcher:
         for rank, (job, hit) in enumerate(shown[:k], start=1):
             # Show the line of the matching chunk that shares most words with the query (else its start).
             response.hits.append(
-                JobHit(rank, job, hit.similarity, "cosine_similarity", best_snippet(hit.text, query), distance=hit.distance)
+                JobHit(rank, job, hit.similarity, "cosine_similarity", best_snippet(hit.text, query) if snippets else hit.text,
+                       distance=hit.distance)
             )
         if len(shown) < k:
             response.notes.append(f"only {len(shown)} job(s) available for this query and filters")
@@ -187,29 +188,29 @@ class Searcher:
         parts = []
         for engine_fn in (self._semantic, self._lexical):
             part = SearchResponse("", query, [], len(eligible), len(self.table))
-            engine_fn(part, query, n, eligible, None)
+            engine_fn(part, query, n, eligible, None, snippets=False)  # snippets only for the k jobs shown
             parts.append(part)
         fused: dict[str, float] = {}
-        snippets: dict[str, str] = {}
+        raw_chunks = {hit.job.job_id: hit.snippet for hit in parts[0].hits}  # best semantic chunk text per job
         for part in parts:
             for hit in part.hits:  # BM25 lists only jobs sharing a term; the others get no lexical vote
                 fused[hit.job.job_id] = fused.get(hit.job.job_id, 0.0) + 1.0 / (RRF_K + hit.rank)
-                snippets.setdefault(hit.job.job_id, hit.snippet)
         ranked = [(self.table[jid], score) for jid, score in sorted(fused.items(), key=lambda kv: (-kv[1], kv[0]))]
         shown, hidden = apply_company_cap(ranked, max_per_company)
         response.chunks_fetched, response.exhausted, response.hidden_by_cap = parts[0].chunks_fetched, True, hidden
         for rank, (job, score) in enumerate(shown[:k], start=1):
-            response.hits.append(JobHit(rank, job, score, "rrf", snippets[job.job_id]))
+            source = raw_chunks.get(job.job_id) or self._records[job.job_id].get("description")
+            response.hits.append(JobHit(rank, job, score, "rrf", best_snippet(source, query)))
         if len(shown) < k:
             response.notes.append(f"only {len(shown)} job(s) available for this query and filters")
 
-    def _lexical(self, response, query, k, eligible, max_per_company) -> None:
+    def _lexical(self, response, query, k, eligible, max_per_company, snippets: bool = True) -> None:
         ranked_ids = self.bm25.search(query, k=len(self.table), eligible=[j.job_id for j in eligible])
         ranked = [(self.table[jid], score) for jid, score in ranked_ids]
         shown, hidden = apply_company_cap(ranked, max_per_company)
         response.hidden_by_cap, response.exhausted = hidden, True
         for rank, (job, score) in enumerate(shown[:k], start=1):
-            snippet = best_snippet(self._records[job.job_id].get("description"), query)
+            snippet = best_snippet(self._records[job.job_id].get("description"), query) if snippets else ""
             response.hits.append(JobHit(rank, job, score, "bm25", snippet.replace("\n", " ")))
         if len(shown) < k:
             response.notes.append(f"only {len(shown)} job(s) share a term with the query")

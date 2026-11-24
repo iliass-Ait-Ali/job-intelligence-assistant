@@ -97,9 +97,9 @@ def main() -> int:
 
         page.get_by_role("link", name="Career Assistant").click()
         wait_idle(page)
-        page.get_by_role("button", name="Why does job 1 match my CV?").click()
-        wait_idle(page)
         page.get_by_role("button", name="Quelles compétences me manquent pour l'offre 1 ?").click()
+        wait_idle(page)
+        page.get_by_text("Sources (").first.click()  # show the cited documents
         shot(page, "08_assistant")
 
         page.get_by_role("link", name="Evaluation & Method").click()

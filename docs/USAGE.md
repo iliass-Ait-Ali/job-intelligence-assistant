@@ -6,7 +6,7 @@ normalizes them, filters for relevant roles, removes duplicates and exports
 
 **Phase 2** (after the Phase 1 sections) adds local semantic job search: SentenceTransformers + ChromaDB, a BM25 baseline and a human-judged evaluation framework.
 
-**Phase 3** (last section) adds CV matching, grounded explanations with a local Ollama model, and a Gradio app.
+**Phase 3** adds CV matching and grounded explanations with a local Ollama model; **Phase 5** (last section) adds the platform: enrichment + SQLite, five search engines, scoring, skill gaps, market analytics, the RAG assistant, the FastAPI service, the Streamlit UI and the benchmarks.
 
 **Not built yet:** Docker, public deployment.
 
@@ -251,7 +251,7 @@ jobintel eval run --per-query --report-json data\eval\report.json
 
 ---
 
-# Phase 3 - CV matching, grounded explanations and the Gradio app
+# Phase 3 - CV matching and grounded explanations
 
 Upload a CV (PDF, text or pasted; French or English) and get job recommendations from the local job database, each with the
 evidence behind it, what is missing or unverified, and a grounded explanation. Everything runs on this computer.
@@ -261,9 +261,9 @@ evidence behind it, what is missing or unverified, and a grounded explanation. E
 ```powershell
 cd job-intelligence-assistant
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev,app]"        # adds gradio, pypdf, pydantic (plus the Phase 2 search libraries)
+python -m pip install -e ".[dev,app]"        # pypdf, python-docx, streamlit, fastapi (plus the search libraries)
 
-jobintel app --open                          # http://127.0.0.1:7860 (loopback only)
+jobintel ui                                  # http://127.0.0.1:8501 (loopback only)
 
 jobintel profile --cv my_cv.pdf              # structured profile as JSON (printed, not saved)
 jobintel match --cv my_cv.pdf --job-type internship --location Paris -n 10 --explain 3
@@ -382,3 +382,24 @@ jobintel regress [--update]                     # label-free baselines; exit cod
   reports never merge them and state "Real language-model output evaluated: NO" unless an Ollama run happened.
 * `scripts/capture_screenshots.py` regenerates `docs/screenshots/` with a synthetic CV (needs `pip install playwright`
   and an installed Edge or Chrome).
+
+---
+
+# Phase 5 - the platform (enrichment, five engines, scoring, gaps, market, assistant, API, UI, benchmarks)
+
+```powershell
+jobintel collect                 # Arbeitnow + Himalayas + Remotive (polite, cached snapshots)
+jobintel enrich                  # structured postings -> data/processed/jobs_enriched.jsonl + data/jobintel.db + quality_report.json
+jobintel index                   # embeddings (GPU if available: JOBINTEL_DEVICE=auto|cuda|cpu)
+jobintel search "stage data analyst Paris" --engine all
+jobintel ui                      # Streamlit app, 9 pages
+jobintel api                     # REST API, http://127.0.0.1:8000/docs
+jobintel bench all               # reports/*.json + reports/evaluation_report.md (add --no-llm without Ollama)
+python scripts/capture_screenshots.py   # with the UI running: drives it with Playwright and saves docs/screenshots/
+python scripts/build_notebooks.py       # executes notebooks/01_exploration.ipynb and 02_evaluation.ipynb
+python scripts/check_links.py           # checks the learning-resource URLs of the knowledge base
+```
+
+Configuration (environment variables, see `.env.example`): `JOBINTEL_DEVICE`, `JOBINTEL_HIMALAYAS_PAGES`,
+`JOBINTEL_HIMALAYAS_TTL_H`, `JOBINTEL_LLM_MODEL`, `JOBINTEL_OLLAMA_URL`, `JOBINTEL_LLM_TRUSTED_HOSTS` (private hosts you
+control, e.g. the `ollama` container), and the scoring weights in `config/scoring.yaml`.

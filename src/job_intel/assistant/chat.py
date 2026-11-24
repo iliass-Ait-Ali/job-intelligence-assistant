@@ -35,6 +35,7 @@ from job_intel.match.gap import analyse_gap, interview_prep, learning_plan, mark
 from job_intel.match.models import CandidateProfile
 from job_intel.match.scoring import CompatibilityScore
 from job_intel.rag.explain import _supports, _tokens, verify_text
+from job_intel.rag.sanitize import looks_like_injection
 
 log = logging.getLogger(__name__)
 MAX_JOBS = 10
@@ -146,7 +147,9 @@ class _Docs:
             return self._by_key[k].id
         self._counts[kind] += 1
         prefix = {"job": "J", "cv": "CV", "market": "M", "kb": "K", "analysis": "S"}[kind]
-        doc = Doc(f"{prefix}{self._counts[kind]}", kind, title, text.strip()[:900], url, job_id)
+        # lines that look like instructions to an AI (prompt injection planted in a listing or CV) never reach a document
+        clean = "\n".join(ln for ln in text.split("\n") if not looks_like_injection(ln))
+        doc = Doc(f"{prefix}{self._counts[kind]}", kind, title, clean.strip()[: 1800 if kind == "analysis" else 1200], url, job_id)
         self.items.append(doc)
         self._by_key[k] = doc
         return doc.id
@@ -156,7 +159,7 @@ class _Docs:
 
 
 def _job_doc(docs: _Docs, posting, extra_lines: list[str] | None = None) -> str:
-    header = f"{posting.title} | {posting.company or '?'} | {posting.location or '?'} | {posting.contract_type or 'contract not stated'}"
+    header = f"{posting.title} | {posting.company or '?'} | {_loc(posting)} | {posting.contract_type or 'contract not stated'}"
     lines = [header]
     req = [s for s in posting.skills if s.level == "required"][:8]
     if req:
@@ -190,8 +193,16 @@ def _cv_doc(docs: _Docs, line: str) -> str:
     return docs.add("cv", "CV", line)
 
 
-def _loc(p) -> str:
-    return p.location or "?"
+def _loc(p, keep: int = 3) -> str:
+    """First places of long remote restrictions ('A, B, C +40 more'): the same string goes in documents and answers."""
+    parts = [x.strip() for x in (p.location or "").split(",") if x.strip()]
+    if not parts:
+        return "?"
+    return ", ".join(parts) if len(parts) <= keep + 1 else f"{', '.join(parts[:keep])} +{len(parts) - keep} more"
+
+
+def _lower_first(text: str) -> str:
+    return text[:1].lower() + text[1:] if text.startswith(("You ", "Your ")) else text
 
 
 # ---------------------------------------------------------------------------------------------
@@ -248,14 +259,14 @@ def _gaps(s: AssistantSession, r: Route, docs: _Docs, t: dict) -> list[Sentence]
         if p is None or s.profile is None:
             continue
         report = analyse_gap(s.profile, match)
-        jid = _job_doc(docs, p, [i.job_evidence for i in report.missing_required[:4]])
+        jid = _job_doc(docs, p, [i.job_evidence for i in (report.missing_required[:4] + report.partial[:3])])
         for item in report.missing_required[:6]:
             out.append(Sentence(t["gap_req"].format(skill=item.skill), [jid]))
         for item in [i for i in report.missing if i.job_level != "required"][:4]:
             out.append(Sentence(t["gap_opt"].format(skill=item.skill), [jid]))
         for item in report.partial[:3]:
             cites = [jid] + ([_cv_doc(docs, item.cv_evidence[0])] if item.cv_evidence else [])
-            out.append(Sentence(t["gap_partial"].format(skill=item.skill, hint=(item.hint or "").rstrip(".")), cites))
+            out.append(Sentence(t["gap_partial"].format(skill=item.skill, hint=_lower_first(item.hint or "").rstrip(".")), cites))
         if not report.missing and not report.partial:
             named = ", ".join(i.skill for i in report.mastered[:8]) or "-"
             out.append(Sentence(t["gap_none"].format(skills=named), [jid]))
@@ -373,7 +384,7 @@ def verify_sentence(sentence: Sentence, docs: _Docs, profile: CandidateProfile |
     if not sentence.citations:
         return "no citation"
     # ordinal references taken from the question ("job 2", "offre 1", "step 3") are not factual numbers
-    sentence = Sentence(_ORDINAL_REF.sub(r"\1", sentence.text), sentence.citations)
+    sentence = Sentence(_ORDINAL_REF.sub(lambda m: m.group(1).lower(), sentence.text), sentence.citations)
     cited = [docs.get(c) for c in sentence.citations]
     if any(d is None for d in cited):
         return f"cites unknown document(s) {[c for c, d in zip(sentence.citations, cited) if d is None]}"

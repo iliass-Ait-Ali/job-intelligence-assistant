@@ -1,3 +1,3 @@
-"""Job & Internship Intelligence Assistant - Phase 1: data collection."""
+"""AI-powered Job & Internship Intelligence Assistant: hybrid search, explainable matching, skill gaps, market analytics, grounded RAG."""
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"

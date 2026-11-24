@@ -14,6 +14,15 @@ from urllib.parse import urlsplit
 import requests
 
 LOOPBACK = {"localhost", "127.0.0.1", "::1", "[::1]"}
+
+
+def trusted_hosts() -> set[str]:
+    """Loopback plus hosts the OPERATOR explicitly lists in JOBINTEL_LLM_TRUSTED_HOSTS (comma-separated), e.g. the
+    `ollama` container of docker-compose: a machine they control. Public LLM APIs are never implied by this."""
+    import os
+
+    extra = {h.strip().lower() for h in os.getenv("JOBINTEL_LLM_TRUSTED_HOSTS", "").split(",") if h.strip()}
+    return LOOPBACK | extra
 DEFAULT_URL = "http://127.0.0.1:11434"
 DEFAULT_MODEL = "llama3.2:3b"
 
@@ -44,11 +53,13 @@ class OllamaClient:
     base_url: str = DEFAULT_URL
     timeout: float = 180.0
     num_ctx: int = 4096
+    num_predict: int = 700  # cap on generated tokens: schema-constrained decoding can otherwise loop until the timeout
     session: Any = None
 
     def __post_init__(self) -> None:
         host = (urlsplit(self.base_url).hostname or "").lower()
-        if host not in LOOPBACK and f"[{host}]" not in LOOPBACK:
+        allowed = trusted_hosts()
+        if host not in allowed and f"[{host}]" not in allowed:
             raise LLMPrivacyError(
                 f"Refusing to use LLM server {self.base_url!r}: CV data may only be sent to Ollama on this "
                 "computer (localhost / 127.0.0.1)."
@@ -96,7 +107,7 @@ class OllamaClient:
         payload = {
             "model": self.model, "stream": False, "format": schema,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            "options": {"temperature": 0, "seed": 0, "num_ctx": self.num_ctx},
+            "options": {"temperature": 0, "seed": 0, "num_ctx": self.num_ctx, "num_predict": self.num_predict},
         }  # fmt: skip
         try:
             response = self.session.post(self._url("/api/chat"), json=payload, timeout=self.timeout)
